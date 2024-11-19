@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.24)
 project(ER_Telecom_qualification)
-
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ER_Telecom_qualification main.cpp)
+
+option(BUILD_TESTING "Enable testing" ${PROJECT_IS_TOP_LEVEL})
+set(GTEST_VERSION 1.15.2 CACHE STRING "")
+
+
+add_subdirectory(net_utils)
