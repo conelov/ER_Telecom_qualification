@@ -1,0 +1,14 @@
+/cmake-build-*
+/build-*
+/bin
+/lib
+/.idea
+
+auto_fetch
+conan_gen
+CMakeUserPresets.json
+
+*.user
+*.autosave
+*.exe
+*.~*
