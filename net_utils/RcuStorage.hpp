@@ -25,25 +25,29 @@ public:
   }
 
 
-  [[nodiscard]] ReadPtr load() noexcept {
+  [[nodiscard]] ReadPtr load() {
     return std::atomic_load_explicit(&p_, std::memory_order_relaxed);
   }
 
 
-  [[nodiscard]] ReadPtr operator*() const noexcept {
+  [[nodiscard]] ReadPtr operator*() {
     return load();
   }
 
 
-  template<typename Mod, typename Merge>
-  std::enable_if_t<std::is_invocable_v<Merge, value_type&, value_type const&>, void> modify(Mod&& mod, Merge&& merge) {
-    MutablePtr const new_p = std::make_shared<value_type>(*load());
-    std::invoke(std::forward<Mod>(mod), new_p);
-    MutablePtr curr_p;
+  template<typename Mod>
+  std::enable_if_t<std::is_invocable_r_v<MutablePtr, Mod, MutablePtr>, void>
+  modify(Mod&& mod) {
     do {
-      curr_p = std::atomic_load_explicit(&p_, std::memory_order_acquire);
-      merge(*new_p, *curr_p);
-    } while (!std::atomic_compare_exchange_strong(&p_, &curr_p, new_p));
+      MutablePtr p_old = std::atomic_load_explicit(&p_, std::memory_order_acquire);
+      if (std::atomic_compare_exchange_strong_explicit(
+            &p_,
+            &p_old,
+            mod(p_old ? std::make_shared<value_type>(*p_old) : std::make_shared<value_type>()),
+            std::memory_order_release, std::memory_order_relaxed)) {
+        break;
+      }
+    } while (true);
   }
 
 private:
