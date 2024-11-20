@@ -53,4 +53,41 @@ function(target_common target)
   target_include_directories(${target} PRIVATE
     "${PROJECT_SOURCE_DIR}"
   )
+  target_compile_options(${target} PRIVATE
+    $<$<OR:$<COMPILE_LANG_AND_ID:CXX,Clang>,$<COMPILE_LANG_AND_ID:CXX,GNU>>:-Wall>
+    $<$<CONFIG:DEBUG>:-v>
+  )
+endfunction()
+
+
+add_custom_target(build_tests)
+
+function(test_common out_var suffix)
+  set(name ER_Telecom_net_utils-test-${suffix})
+  add_executable(${name})
+  add_dependencies(build_tests ${name})
+
+  add_test(NAME ${name} COMMAND "$<TARGET_FILE:${name}>")
+
+  include("${PROJECT_SOURCE_DIR}/utils.cmake")
+  # https://github.com/cpm-cmake/CPM.cmake/tree/master/examples/gtest
+  auto_fetch(
+    NAME googletest
+    GITHUB_REPOSITORY google/googletest
+    VERSION ${GTEST_VERSION}
+    OPTIONS "INSTALL_GTEST OFF"
+  )
+
+  target_link_libraries(${name} PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    ER_Telecom_net_utils
+  )
+
+  target_compile_options(${name} PRIVATE
+    $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
+  )
+
+  target_common(${name})
+  set(${out_var} ${name} PARENT_SCOPE)
 endfunction()

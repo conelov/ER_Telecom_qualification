@@ -1,18 +1,22 @@
 #pragma once
 
-#include <atomic>
+#include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <memory>
-#include <unordered_set>
+#include <string_view>
+#include <unordered_map>
 
 #include <net_utils/DnsCacheInterface.hpp>
+#include <net_utils/RcuStorage.hpp>
 #include <net_utils/Singleton.hpp>
 
 
 namespace nut {
 
 
-class DnsCache final : public DnsCacheInterface
+class DnsCache final
+    : public DnsCacheInterface
     , public Singleton<DnsCache, SingletonLivetimeMode::Global> {
 public:
   static void                      update_global(const std::string& name, const std::string& ip);
@@ -20,34 +24,29 @@ public:
 
 public:
   ~DnsCache();
-  DnsCache();
+  DnsCache(std::size_t cache_limit, std::size_t cache_size);
+  DnsCache(std::size_t cache_limit = DNS_CACHE_REC_LIMIT);
 
   void                      update(const std::string& name, const std::string& ip) override;
   [[nodiscard]] std::string resolve(const std::string& name) const override;
 
 private:
-  struct Node final {
-    std::string       name;
+  using Clock = std::chrono::steady_clock;
+
+  struct Rec final {
     std::string       ip;
-    std::atomic<bool> valid = true;
+    Clock::time_point timestamp;
   };
+
+  using HashMap = std::unordered_map<std::string, Rec>;
 
 private:
-  static auto constexpr node_hash = [](Node const& n) -> std::uint64_t {
-    if (!n.valid) {
-      return 0;
-    }
-    return std::hash<decltype(n.name)>{}(n.name);
-  };
-
-
-  static auto constexpr node_cmp = [](Node const& lhs, Node const& rhs) {
-//    return
-  };
+  void cleanup_if_needed(HashMap& map) const;
 
 private:
-  std::unordered_set<Node> data_;
-
+  RcuStorage<HashMap> mutable map_;
+  std::size_t const cache_limit_;
+  std::size_t const cache_size_;
 
   friend Singleton<DnsCache, SingletonLivetimeMode::Global>;
 };

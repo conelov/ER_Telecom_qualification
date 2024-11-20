@@ -1,54 +1,100 @@
-function(test_common suffix out_var)
-  set(name ER_Telecom_net_utils-tests${suffix})
-
-  add_executable(${name}
-    tests_general.cpp
+function(test_RcuStorage_common out_var suffix)
+  test_common(name RcuStorage${suffix})
+  target_sources(${name} PRIVATE
     RcuStorage.cpp
   )
-
-  include("${PROJECT_SOURCE_DIR}/utils.cmake")
-  # https://github.com/cpm-cmake/CPM.cmake/tree/master/examples/gtest
-  auto_fetch(
-    NAME googletest
-    GITHUB_REPOSITORY google/googletest
-    VERSION ${GTEST_VERSION}
-    OPTIONS "INSTALL_GTEST OFF"
-  )
-
-  target_link_libraries(${name} PRIVATE
-    GTest::gmock
-    GTest::gmock_main
-    ER_Telecom_net_utils
-  )
-
-  target_common(${name})
   set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
-test_common("" name)
-
+test_RcuStorage_common(name "")
 
 foreach(i IN LISTS TESTS_SANITIZE)
   if("${i}" STREQUAL "address")
-    test_common("-san_address" name)
+    test_RcuStorage_common(name "-san_address")
     target_compile_options(${name} PRIVATE
       -fsanitize=address
+      -fno-common
       -fno-omit-frame-pointer
-      -fsanitize-recover
+      -fsanitize-address-use-after-scope
     )
     target_link_options(${name} PRIVATE
       -fsanitize=address
     )
   endif()
 
+  if("${i}" STREQUAL "mem")
+    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      message(STATUS "Memory sanitizer disabled.")
+
+    else()
+      test_RcuStorage_common(name "-san_mem")
+      target_compile_options(${name} PRIVATE
+        -fsanitize=memory
+        -fsanitize-memory-track-origins
+        -fno-omit-frame-pointer
+        -fno-optimize-sibling-calls
+      )
+      target_link_options(${name} PRIVATE
+        -fsanitize=memory
+      )
+    endif()
+  endif()
 
   if("${i}" STREQUAL "thread")
-    test_common("-san_thread" name)
-    target_compile_options(${name} PRIVATE
+    test_RcuStorage_common(name "-san_thread")
+    target_compile_options(${name} PUBLIC
       -fsanitize=thread
+      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+      -mllvm -gcolumn-info
+      >
     )
-    target_link_options(${name} PRIVATE
+    target_link_options(${name} PUBLIC
       -fsanitize=thread
     )
   endif()
+
+  if("${i}" STREQUAL "leak")
+    test_RcuStorage_common(name "-san_leak")
+    target_compile_options(${name} PUBLIC
+      -fsanitize=leak
+    )
+    target_link_options(${name} PUBLIC
+      -fsanitize=leak
+    )
+  endif()
+
+  if("${i}" STREQUAL "ub")
+    test_RcuStorage_common(name "-san-ub")
+    target_compile_options(${name} PRIVATE
+      -fsanitize=undefined
+      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+      -fsanitize=integer
+      -fsanitize=nullability
+      >
+    )
+    target_link_options(${name} PRIVATE
+      -fsanitize=undefined
+      -lubsan
+      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+      -fsanitize=integer
+      -fsanitize=nullability
+      >
+    )
+  endif()
+endforeach()
+
+
+function(test_DnsCache_common out_var cache_size)
+  test_common(name DnsCache-cache_${cache_size})
+  target_sources(${name} PRIVATE
+    DnsCache.cpp
+  )
+  target_compile_definitions(${name} PRIVATE
+    CACHE_LIMIT=${cache_size}
+  )
+  set(${out_var} ${name} PARENT_SCOPE)
+endfunction()
+
+foreach(i 3 100000)
+  test_DnsCache_common(name ${i})
 endforeach()

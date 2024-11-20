@@ -19,9 +19,8 @@ public:
   RcuStorage() noexcept = default;
 
 
-  template<typename T>
-  explicit RcuStorage(T&& in)
-      : p_{in} {
+  explicit RcuStorage(MutablePtr in)
+      : p_{std::move(in)} {
   }
 
 

@@ -27,7 +27,7 @@ protected:
 
 protected:
   void SetUp() override {
-    assert(threads_.empty());
+    threads_.clear();
     shared_data = {};
   }
 
@@ -38,7 +38,6 @@ protected:
         thread.join();
       }
     }
-    threads_.clear();
   }
 
 
@@ -63,7 +62,6 @@ TYPED_TEST(MultiThreadedTest, smoke) {
           return;
         }
         [[maybe_unused]] auto v = **this->shared_data;
-        (void*)&(v);
       }
     });
   }

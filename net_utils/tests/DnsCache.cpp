@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <net_utils/DnsCache.hpp>
+
 
 TEST(DnsCache, smoke) {
-  ASSERT_EQ(1, 1);
+
 }
