@@ -2,6 +2,7 @@ set(name ER_Telecom_net_utils-tests)
 
 add_executable(${name}
   tests_general.cpp
+  RcuStorage.cpp
 )
 
 include("${PROJECT_SOURCE_DIR}/utils.cmake")
