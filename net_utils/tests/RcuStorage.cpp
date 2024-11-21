@@ -75,18 +75,14 @@ TYPED_TEST(MultiThreadedTest, smoke) {
             ptr = std::make_shared<typename decltype(this->shared_data)::value_type>();
           }
           ptr->at(i) = ++c;
-          return ptr;
+          return std::move(ptr);
         });
       }
     });
   }
 
   this->TearDown();
-
-  auto constexpr acc = [](auto const& arr) {
-    return std::accumulate(arr.cbegin(), arr.cend(), 0u);
-  };
-  ASSERT_EQ(acc(**this->shared_data), acc(counts));
+  ASSERT_EQ(**this->shared_data, counts);
 }
 
 

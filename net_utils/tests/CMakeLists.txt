@@ -3,6 +3,9 @@ function(test_RcuStorage_common out_var suffix)
   target_sources(${name} PRIVATE
     RcuStorage.cpp
   )
+  target_link_libraries(${name} PRIVATE
+    GTest::gtest_main
+  )
   set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
@@ -44,9 +47,6 @@ foreach(i IN LISTS TESTS_SANITIZE)
     test_RcuStorage_common(name "-san_thread")
     target_compile_options(${name} PUBLIC
       -fsanitize=thread
-      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
-      -mllvm -gcolumn-info
-      >
     )
     target_link_options(${name} PUBLIC
       -fsanitize=thread
@@ -89,12 +89,15 @@ function(test_DnsCache_common out_var cache_size)
   target_sources(${name} PRIVATE
     DnsCache.cpp
   )
+  target_link_libraries(${name} PRIVATE
+    ER_Telecom_net_utils
+  )
   target_compile_definitions(${name} PRIVATE
     CACHE_LIMIT=${cache_size}
   )
   set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
-foreach(i 3 100000)
+foreach(i 3 100000 10000000)
   test_DnsCache_common(name ${i})
 endforeach()

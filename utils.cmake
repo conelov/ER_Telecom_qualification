@@ -80,8 +80,6 @@ function(test_common out_var suffix)
 
   target_link_libraries(${name} PRIVATE
     GTest::gtest
-    GTest::gtest_main
-    ER_Telecom_net_utils
   )
 
   target_compile_options(${name} PRIVATE

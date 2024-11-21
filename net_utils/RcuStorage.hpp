@@ -42,7 +42,7 @@ public:
       if (std::atomic_compare_exchange_strong_explicit(
             &p_,
             &p_old,
-            mod(p_old ? std::make_shared<value_type>(*p_old) : std::make_shared<value_type>()),
+            mod(p_old ? std::make_shared<value_type>(*p_old) : MutablePtr{}),
             std::memory_order_release, std::memory_order_relaxed)) {
         break;
       }

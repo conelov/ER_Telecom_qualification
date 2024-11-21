@@ -4,8 +4,7 @@ set(DNS_CACHE_REC_LIMIT 10 CACHE STRING "")
 set(name ER_Telecom_net_utils)
 
 add_library(${name}
-  DnsCacheInterface.hpp
-  DnsCacheInterface.hpp src/DnsCache.cpp
+  DnsCache.hpp src/DnsCache.cpp
   Singleton.hpp
   utils.hpp
   RcuStorage.hpp
