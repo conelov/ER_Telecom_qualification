@@ -7,6 +7,11 @@
 
 #include <net_utils/RcuStorage.hpp>
 
+#include <MultiThreadedFixture.hpp>
+
+
+using namespace nut;
+
 
 namespace {
 
@@ -18,41 +23,27 @@ using Counts                      = std::array<std::uintmax_t, num_writers>;
 
 
 template<typename T_>
-class MultiThreadedTest : public ::testing::Test {
-private:
-  std::vector<std::thread> threads_;
-
+class RcuStorageTest : public MultiThreadedTest {
 protected:
   T_ shared_data;
 
 protected:
   void SetUp() override {
-    threads_.clear();
+    MultiThreadedTest::SetUp();
     shared_data = {};
   }
 
-
   void TearDown() override {
-    for (auto& thread : threads_) {
-      if (thread.joinable()) {
-        thread.join();
-      }
-    }
-  }
-
-
-  template<typename Fn>
-  void emplace_worker(Fn&& fn) {
-    threads_.emplace_back(std::forward<Fn>(fn));
+    MultiThreadedTest::TearDown();
   }
 };
 
 
-using Storage = ::testing::Types<nut::RcuStorage<Counts>>;
-TYPED_TEST_SUITE(MultiThreadedTest, Storage);
+using Storage = ::testing::Types<RcuStorage<Counts>>;
+TYPED_TEST_SUITE(RcuStorageTest, Storage);
 
 
-TYPED_TEST(MultiThreadedTest, smoke) {
+TYPED_TEST(RcuStorageTest, smoke) {
   Counts counts{};
 
   for (std::size_t i = 0; i < num_readers; ++i) {

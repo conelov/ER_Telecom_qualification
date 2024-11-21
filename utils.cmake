@@ -80,12 +80,103 @@ function(test_common out_var suffix)
 
   target_link_libraries(${name} PRIVATE
     GTest::gtest
+    GTest::gtest_main
   )
 
   target_compile_options(${name} PRIVATE
     $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
   )
 
+  target_include_directories(${name} PRIVATE
+    "${PROJECT_SOURCE_DIR}/net_utils/tests"
+  )
+
+  target_sources(${name} PRIVATE
+    "${PROJECT_SOURCE_DIR}/net_utils/tests/MultiThreadedFixture.hpp"
+  )
+
   target_common(${name})
   set(${out_var} ${name} PARENT_SCOPE)
+endfunction()
+
+
+function(test_make_sans out_var suffix)
+  foreach(i IN LISTS TESTS_SANITIZE)
+    if("${i}" STREQUAL "address")
+      test_common(name "${suffix}-san_address")
+      target_compile_options(${name} PRIVATE
+        -fsanitize=address
+        -fno-common
+        -fno-omit-frame-pointer
+        -fsanitize-address-use-after-scope
+      )
+      target_link_options(${name} PRIVATE
+        -fsanitize=address
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "mem")
+      if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        message(STATUS "Memory sanitizer disabled.")
+
+      else()
+        test_common(name "${suffix}-san_mem")
+        target_compile_options(${name} PRIVATE
+          -fsanitize=memory
+          -fsanitize-memory-track-origins
+          -fno-omit-frame-pointer
+          -fno-optimize-sibling-calls
+        )
+        target_link_options(${name} PRIVATE
+          -fsanitize=memory
+        )
+      endif()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "thread")
+      test_common(name "${suffix}-san_thread")
+      target_compile_options(${name} PUBLIC
+        -fsanitize=thread
+      )
+      target_link_options(${name} PUBLIC
+        -fsanitize=thread
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "leak")
+      test_common(name "${suffix}-san_leak")
+      target_compile_options(${name} PUBLIC
+        -fsanitize=leak
+      )
+      target_link_options(${name} PUBLIC
+        -fsanitize=leak
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "ub")
+      test_common(name "${suffix}-san-ub")
+      target_compile_options(${name} PRIVATE
+        -fsanitize=undefined
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+        -fsanitize=integer
+        -fsanitize=nullability
+        >
+      )
+      target_link_options(${name} PRIVATE
+        -fsanitize=undefined
+        -lubsan
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+        -fsanitize=integer
+        -fsanitize=nullability
+        >
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+  endforeach()
+
+  set(${out_var} ${${out_var}} PARENT_SCOPE)
 endfunction()

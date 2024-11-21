@@ -1,6 +1,6 @@
 #include <cassert>
-#include <queue>
 #include <cmath>
+#include <queue>
 
 #include <net_utils/DnsCache.hpp>
 
@@ -33,18 +33,21 @@ DnsCache::DnsCache(std::size_t cache_limit)
 }
 
 
+DnsCache::DnsCache()
+    : DnsCache{DNS_CACHE_REC_LIMIT} {
+}
+
+
 void DnsCache::update(const std::string& name, const std::string& ip_in) {
   auto const self = instance();
-  self->map_.modify([&](auto ptr) {
+  self->map_.modify([self, &name, &ip_in](auto ptr) {
     assert(ptr);
     auto& [ip, time] = (*ptr)[name];
     ip               = ip_in;
     time             = Clock::now();
+    self->cleanup_if_needed(*ptr);
     return std::move(ptr);
   });
-  // if (clean_need) {
-  // cleanup_if_needed();
-  // }
 }
 
 
@@ -60,9 +63,8 @@ std::string DnsCache::resolve(const std::string& name) {
 
 
 // O(DNS_CACHE_REC_LIMIT log DNS_CACHE_CLEANUP_BOUND)
-void DnsCache::cleanup_if_needed(DnsCache::HashMap& map) const {
-  assert(map.size() <= cache_size_);
-  if (map.size() < cache_size_) {
+void DnsCache::cleanup_if_needed(HashMap& map) const {
+  if (map.size() <= cache_size_) {
     return;
   }
 
@@ -71,7 +73,7 @@ void DnsCache::cleanup_if_needed(DnsCache::HashMap& map) const {
     return lhs->second.timestamp < rhs->second.timestamp;
   };
   std::vector<It> mem;
-  mem.reserve(cache_size_ - cache_limit_ + 1);
+  mem.reserve(map.size() - cache_limit_ + 1);
   std::priority_queue<It, decltype(mem), decltype(queue_comp)> queue{queue_comp, std::move(mem)};
 
   for (auto it = map.cbegin(); it != map.cend(); ++it) {

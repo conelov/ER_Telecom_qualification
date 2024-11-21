@@ -13,14 +13,16 @@ namespace nut {
 
 class DnsCache final : public Singleton<DnsCache, SingletonLivetimeMode::Global> {
 public:
-  ~DnsCache();
-
   static void                      update(const std::string& name, const std::string& ip);
   [[nodiscard]] static std::string resolve(const std::string& name);
 
+public:
+  ~DnsCache();
+
 private:
   DnsCache(std::size_t cache_limit, std::size_t cache_size);
-  explicit DnsCache(std::size_t cache_limit = DNS_CACHE_REC_LIMIT);
+  explicit DnsCache(std::size_t cache_limit);
+  DnsCache();
 
 private:
   using Clock = std::chrono::steady_clock;
@@ -31,12 +33,13 @@ private:
   };
 
   using HashMap = std::unordered_map<std::string, Rec>;
+  using Storage = RcuStorage<HashMap>;
 
 private:
   void cleanup_if_needed(HashMap& map) const;
 
 private:
-  RcuStorage<HashMap> mutable map_;
+  Storage           map_;
   std::size_t const cache_limit_;
   std::size_t const cache_size_;
 

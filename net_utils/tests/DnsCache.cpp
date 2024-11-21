@@ -2,6 +2,8 @@
 
 #include <net_utils/DnsCache.hpp>
 
+#include <MultiThreadedFixture.hpp>
+
 
 using namespace nut;
 
@@ -9,20 +11,31 @@ using namespace nut;
 namespace {
 
 
-TEST(DnsCache, smoke) {
+class DnsCacheTest : public MultiThreadedTest {
+protected:
+  void SetUp(std::size_t n) {
+    MultiThreadedTest::SetUp();
+    DnsCache::init(n);
+  }
+
+
+  void TearDown() override {
+    MultiThreadedTest::TearDown();
+    DnsCache::destroy();
+  }
+};
+
+
+TEST_F(DnsCacheTest, smoke) {
+  SetUp(1);
   ASSERT_EQ(DnsCache::resolve("www.google.com"), "");
   ASSERT_NO_THROW(DnsCache::update("www.google.com", "0.0.0.0"));
   ASSERT_EQ(DnsCache::resolve("www.google.com"), "0.0.0.0");
 }
 
 
-}// namespace
-
-
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  DnsCache::init(std::size_t{CACHE_LIMIT});
-
-  return RUN_ALL_TESTS();
+TEST_F(DnsCacheTest, high_load) {
 }
+
+
+}// namespace
