@@ -10,11 +10,14 @@ namespace nut {
 
 
 class MultiThreadedTest : public ::testing::Test {
-protected:
-  static std::size_t constexpr iterations = 50'000;
+private:
+  static std::size_t constexpr iterations_default = 50'000;
 
 private:
   std::vector<std::thread> threads_;
+
+protected:
+  std::size_t iterations = iterations_default;
 
 protected:
   void TearDown() override {
@@ -24,13 +27,14 @@ protected:
       }
     }
     threads_.clear();
+    iterations = iterations_default;
   }
 
 
   template<typename Fn>
   void emplace_worker(Fn&& fn) {
     threads_.emplace_back(
-      [](auto fn) {
+      [this](auto fn) {
         for (std::size_t i = 0; i < iterations; ++i) {
           fn();
         }

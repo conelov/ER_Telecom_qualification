@@ -12,7 +12,7 @@ endforeach()
 
 
 
-test_common(name DnsCache-cache)
+test_common(name DnsCache)
 test_make_sans(list_sans DnsCache)
 list(APPEND list_sans ${name})
 foreach(i IN LISTS list_sans)
