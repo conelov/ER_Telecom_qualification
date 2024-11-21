@@ -63,7 +63,7 @@ endfunction()
 add_custom_target(build_tests)
 
 function(test_common out_var suffix)
-  set(name ER_Telecom_net_utils-test-${suffix})
+  set(name ${PROJECT_NAME}-test-${suffix})
   add_executable(${name})
   add_dependencies(build_tests ${name})
 
@@ -93,6 +93,7 @@ function(test_common out_var suffix)
 
   target_sources(${name} PRIVATE
     "${PROJECT_SOURCE_DIR}/net_utils/tests/MultiThreadedFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/tests/common.cpp"
   )
 
   target_common(${name})
@@ -103,7 +104,7 @@ endfunction()
 function(test_make_sans out_var suffix)
   foreach(i IN LISTS TESTS_SANITIZE)
     if("${i}" STREQUAL "address")
-      test_common(name "${suffix}-san_address")
+      test_common(name "${suffix}-asan")
       target_compile_options(${name} PRIVATE
         -fsanitize=address
         -fno-common
@@ -121,7 +122,7 @@ function(test_make_sans out_var suffix)
         message(STATUS "Memory sanitizer disabled.")
 
       else()
-        test_common(name "${suffix}-san_mem")
+        test_common(name "${suffix}-msan")
         target_compile_options(${name} PRIVATE
           -fsanitize=memory
           -fsanitize-memory-track-origins
@@ -136,7 +137,7 @@ function(test_make_sans out_var suffix)
     endif()
 
     if("${i}" STREQUAL "thread")
-      test_common(name "${suffix}-san_thread")
+      test_common(name "${suffix}-tsan")
       target_compile_options(${name} PUBLIC
         -fsanitize=thread
       )
@@ -147,7 +148,7 @@ function(test_make_sans out_var suffix)
     endif()
 
     if("${i}" STREQUAL "leak")
-      test_common(name "${suffix}-san_leak")
+      test_common(name "${suffix}-lsan")
       target_compile_options(${name} PUBLIC
         -fsanitize=leak
       )
@@ -158,7 +159,7 @@ function(test_make_sans out_var suffix)
     endif()
 
     if("${i}" STREQUAL "ub")
-      test_common(name "${suffix}-san-ub")
+      test_common(name "${suffix}-usan")
       target_compile_options(${name} PRIVATE
         -fsanitize=undefined
         $<$<COMPILE_LANG_AND_ID:CXX,Clang>:

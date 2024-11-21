@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(ER_Telecom_qualification LANGUAGES CXX)
+project(ER_Telecom_qualif LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -9,7 +9,8 @@ set(GTEST_VERSION 1.15.2 CACHE STRING "")
 set(TESTS_SANITIZE "address;thread;ub;leak;mem" CACHE STRING "")
 
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND NOT "${TESTS_SANITIZE}" STREQUAL "")
+  set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
   enable_testing()
 endif()
 add_subdirectory(net_utils)
