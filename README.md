@@ -16,7 +16,7 @@ Big O для `DnsCache`.
 (*сравнить с shared_mutex реализацией*).
 
 По умолчанию для всех тестов в [tests](net_utils/tests) создается target с санитайзерами из списка `TESTS_SANITIZE`. <br/>
-Запустить все тесты можно командой `ctest`.
+Собрать и запустить все тесты можно командой `BUILD_DIR=./build; cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release && cmake --build $BUILD_DIR --target build_tests --parallel $(nproc) && ctest --test-dir $BUILD_DIR --extra-verbose --parallel $(nproc)`. Выполнять из папки проекта.
 
 Тесты собраны и запущены:
 * GNU C++17 (Ubuntu 10.5.0-1ubuntu1~22.04) version 10.5.0 (x86_64-linux-gnu)
