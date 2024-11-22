@@ -1,23 +1,134 @@
 include("${PROJECT_SOURCE_DIR}/utils.cmake")
 
 
-test_common(name RcuStorage)
-test_make_sans(list_sans RcuStorage)
-list(APPEND list_sans ${name})
-foreach(i IN LISTS list_sans)
+add_custom_target(build_tests)
+
+function(test_common_base out_var suffix)
+  # https://github.com/cpm-cmake/CPM.cmake/tree/master/examples/gtest
+  auto_fetch(
+    NAME googletest
+    GITHUB_REPOSITORY google/googletest
+    VERSION ${GTEST_VERSION}
+    OPTIONS "INSTALL_GTEST OFF"
+  )
+
+  set(name ${PROJECT_NAME}-test-${suffix})
+  add_executable(${name}
+    common.cpp
+  )
+  aux_common(${name})
+
+  add_dependencies(build_tests ${name})
+  add_test(NAME ${name} COMMAND "$<TARGET_FILE:${name}>")
+
+  target_link_libraries(${name} PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+  )
+
+  set(${out_var} ${name} PARENT_SCOPE)
+endfunction()
+
+
+function(test_common out_var suffix)
+  test_common_base(name "${suffix}")
+  unset(${out_var})
+  list(APPEND ${out_var} ${name})
+
+  foreach(i IN LISTS TESTS_SANITIZE)
+    if("${i}" STREQUAL "address")
+      test_common_base(name "${suffix}-asan")
+      target_compile_options(${name} PRIVATE
+        -fsanitize=address
+        -fno-common
+        -fno-omit-frame-pointer
+        -fsanitize-address-use-after-scope
+      )
+      target_link_options(${name} PRIVATE
+        -fsanitize=address
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "mem")
+      if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        message(STATUS "Memory sanitizer disabled.")
+
+      else()
+        test_common_base(name "${suffix}-msan")
+        target_compile_options(${name} PRIVATE
+          -fsanitize=memory
+          -fsanitize-memory-track-origins
+          -fno-omit-frame-pointer
+          -fno-optimize-sibling-calls
+        )
+        target_link_options(${name} PRIVATE
+          -fsanitize=memory
+        )
+      endif()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "thread")
+      test_common_base(name "${suffix}-tsan")
+      target_compile_options(${name} PUBLIC
+        -fsanitize=thread
+      )
+      target_link_options(${name} PUBLIC
+        -fsanitize=thread
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "leak")
+      test_common_base(name "${suffix}-lsan")
+      target_compile_options(${name} PUBLIC
+        -fsanitize=leak
+      )
+      target_link_options(${name} PUBLIC
+        -fsanitize=leak
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "ub")
+      test_common_base(name "${suffix}-usan")
+      target_compile_options(${name} PRIVATE
+        -fsanitize=undefined
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+        -fsanitize=integer
+        -fsanitize=nullability
+        >
+      )
+      target_link_options(${name} PRIVATE
+        -fsanitize=undefined
+        -lubsan
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+        -fsanitize=integer
+        -fsanitize=nullability
+        >
+      )
+      list(APPEND ${out_var} ${name})
+    endif()
+  endforeach()
+
+  set(${out_var} ${${out_var}} PARENT_SCOPE)
+endfunction()
+
+
+test_common(tests RcuStorage)
+foreach(i IN LISTS tests)
   target_sources(${i} PRIVATE
     RcuStorage.cpp
   )
 endforeach()
 
 
-
-test_common(name DnsCache)
-test_make_sans(list_sans DnsCache)
-list(APPEND list_sans ${name})
-foreach(i IN LISTS list_sans)
+test_common(tests DnsCache)
+foreach(i IN LISTS tests)
   target_sources(${i} PRIVATE
     DnsCache.cpp
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
   )
   target_link_libraries(${i} PRIVATE
     ER_Telecom_net_utils

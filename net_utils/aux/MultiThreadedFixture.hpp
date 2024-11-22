@@ -3,24 +3,21 @@
 #include <thread>
 #include <vector>
 
-#include <gtest/gtest.h>
-
 
 namespace nut {
 
 
-class MultiThreadedTest : public ::testing::Test {
-private:
-  static std::size_t constexpr iterations_default = 50'000;
-
-private:
-  std::vector<std::thread> threads_;
-
-protected:
+class MultiThreadedFixture {
+public:
   std::size_t iterations = iterations_default;
 
-protected:
-  void TearDown() override {
+public:
+  virtual ~MultiThreadedFixture() {
+    down();
+  }
+
+
+  virtual void down() {
     for (auto& thread : threads_) {
       if (thread.joinable()) {
         thread.join();
@@ -41,6 +38,12 @@ protected:
       },
       std::forward<Fn>(fn));
   }
+
+private:
+  static std::size_t constexpr iterations_default = 50'000;
+
+private:
+  std::vector<std::thread> threads_;
 };
 
 

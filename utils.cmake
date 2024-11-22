@@ -56,128 +56,14 @@ function(target_common target)
   target_compile_options(${target} PRIVATE
     $<$<OR:$<COMPILE_LANG_AND_ID:CXX,Clang>,$<COMPILE_LANG_AND_ID:CXX,GNU>>:-Wall>
     $<$<CONFIG:DEBUG>:-v>
-  )
-endfunction()
-
-
-add_custom_target(build_tests)
-
-function(test_common out_var suffix)
-  set(name ${PROJECT_NAME}-test-${suffix})
-  add_executable(${name})
-  add_dependencies(build_tests ${name})
-
-  add_test(NAME ${name} COMMAND "$<TARGET_FILE:${name}>")
-
-  include("${PROJECT_SOURCE_DIR}/utils.cmake")
-  # https://github.com/cpm-cmake/CPM.cmake/tree/master/examples/gtest
-  auto_fetch(
-    NAME googletest
-    GITHUB_REPOSITORY google/googletest
-    VERSION ${GTEST_VERSION}
-    OPTIONS "INSTALL_GTEST OFF"
-  )
-
-  target_link_libraries(${name} PRIVATE
-    GTest::gtest
-    GTest::gtest_main
-  )
-
-  target_compile_options(${name} PRIVATE
     $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
   )
-
-  target_include_directories(${name} PRIVATE
-    "${PROJECT_SOURCE_DIR}/net_utils/tests"
-  )
-
-  target_sources(${name} PRIVATE
-    "${PROJECT_SOURCE_DIR}/net_utils/tests/MultiThreadedFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/tests/common.cpp"
-  )
-
-  target_common(${name})
-  set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
 
-function(test_make_sans out_var suffix)
-  foreach(i IN LISTS TESTS_SANITIZE)
-    if("${i}" STREQUAL "address")
-      test_common(name "${suffix}-asan")
-      target_compile_options(${name} PRIVATE
-        -fsanitize=address
-        -fno-common
-        -fno-omit-frame-pointer
-        -fsanitize-address-use-after-scope
-      )
-      target_link_options(${name} PRIVATE
-        -fsanitize=address
-      )
-      list(APPEND ${out_var} ${name})
-    endif()
-
-    if("${i}" STREQUAL "mem")
-      if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        message(STATUS "Memory sanitizer disabled.")
-
-      else()
-        test_common(name "${suffix}-msan")
-        target_compile_options(${name} PRIVATE
-          -fsanitize=memory
-          -fsanitize-memory-track-origins
-          -fno-omit-frame-pointer
-          -fno-optimize-sibling-calls
-        )
-        target_link_options(${name} PRIVATE
-          -fsanitize=memory
-        )
-      endif()
-      list(APPEND ${out_var} ${name})
-    endif()
-
-    if("${i}" STREQUAL "thread")
-      test_common(name "${suffix}-tsan")
-      target_compile_options(${name} PUBLIC
-        -fsanitize=thread
-      )
-      target_link_options(${name} PUBLIC
-        -fsanitize=thread
-      )
-      list(APPEND ${out_var} ${name})
-    endif()
-
-    if("${i}" STREQUAL "leak")
-      test_common(name "${suffix}-lsan")
-      target_compile_options(${name} PUBLIC
-        -fsanitize=leak
-      )
-      target_link_options(${name} PUBLIC
-        -fsanitize=leak
-      )
-      list(APPEND ${out_var} ${name})
-    endif()
-
-    if("${i}" STREQUAL "ub")
-      test_common(name "${suffix}-usan")
-      target_compile_options(${name} PRIVATE
-        -fsanitize=undefined
-        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
-        -fsanitize=integer
-        -fsanitize=nullability
-        >
-      )
-      target_link_options(${name} PRIVATE
-        -fsanitize=undefined
-        -lubsan
-        $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
-        -fsanitize=integer
-        -fsanitize=nullability
-        >
-      )
-      list(APPEND ${out_var} ${name})
-    endif()
-  endforeach()
-
-  set(${out_var} ${${out_var}} PARENT_SCOPE)
+function(aux_common target)
+  target_common(${name})
+  target_sources(${target} PRIVATE
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
+  )
 endfunction()

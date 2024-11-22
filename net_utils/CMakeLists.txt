@@ -21,3 +21,7 @@ target_compile_definitions(${name} PUBLIC
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+if(BUILD_GBENCH)
+  add_subdirectory(bench)
+endif()

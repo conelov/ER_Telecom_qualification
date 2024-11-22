@@ -1,14 +1,10 @@
-#include <cassert>
-#include <chrono>
-#include <numeric>
-#include <thread>
-#include <vector>
+#include <array>
 
 #include <gtest/gtest.h>
 
 #include <net_utils/RcuStorage.hpp>
 
-#include <MultiThreadedFixture.hpp>
+#include <net_utils/aux/MultiThreadedFixture.hpp>
 
 
 using namespace nut;
@@ -23,13 +19,14 @@ using Counts                      = std::array<std::uintmax_t, num_writers>;
 
 
 template<typename T_>
-class RcuStorageTest : public MultiThreadedTest {
+class RcuStorageTest
+    : public ::testing::Test
+    , public MultiThreadedFixture {
 protected:
   T_ shared_data;
 
 protected:
-  void SetUp() override {
-    MultiThreadedTest::SetUp();
+  void TearDown() override {
     shared_data = {};
   }
 };
@@ -65,7 +62,7 @@ TYPED_TEST(RcuStorageTest, smoke) {
     });
   }
 
-  this->TearDown();
+  this->down();
   ASSERT_EQ(**this->shared_data, counts);
 }
 
