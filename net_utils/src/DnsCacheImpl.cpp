@@ -2,7 +2,7 @@
 #include <cmath>
 #include <queue>
 
-#include <net_utils/DnsCache.hpp>
+#include <net_utils/DnsCacheImpl.hpp>
 
 
 namespace nut {
@@ -17,10 +17,10 @@ constexpr auto kCacheSize = 9. / 10;
 }// namespace
 
 
-DnsCache::~DnsCache() = default;
+DnsCacheImpl::~DnsCacheImpl() = default;
 
 
-DnsCache::DnsCache(std::size_t cache_limit, std::size_t cache_size)
+DnsCacheImpl::DnsCacheImpl(std::size_t cache_limit, std::size_t cache_size)
     : map_{std::make_shared<HashMap>()}
     , cache_limit_{cache_limit}
     , cache_size_{cache_size} {
@@ -28,32 +28,30 @@ DnsCache::DnsCache(std::size_t cache_limit, std::size_t cache_size)
 }
 
 
-DnsCache::DnsCache(std::size_t cache_limit)
-    : DnsCache{cache_limit, cache_limit + static_cast<std::size_t>(std::ceil(std::pow(cache_limit, _::kCacheSize)))} {
+DnsCacheImpl::DnsCacheImpl(std::size_t cache_limit)
+    : DnsCacheImpl{cache_limit, cache_limit + static_cast<std::size_t>(std::ceil(std::pow(cache_limit, _::kCacheSize)))} {
 }
 
 
-DnsCache::DnsCache()
-    : DnsCache{DNS_CACHE_REC_LIMIT} {
+DnsCacheImpl::DnsCacheImpl()
+    : DnsCacheImpl{DNS_CACHE_REC_LIMIT} {
 }
 
 
-void DnsCache::update(const std::string& name, const std::string& ip_in) {
-  auto const self = instance();
-  self->map_.modify([self, &name, &ip_in](auto ptr) {
+void DnsCacheImpl::update(const std::string& name, const std::string& ip_in) {
+  map_.modify([this, &name, &ip_in](auto ptr) {
     assert(ptr);
     auto& [ip, time] = (*ptr)[name];
     ip               = ip_in;
     time             = Clock::now();
-    self->cleanup_if_needed(*ptr);
+    cleanup_if_needed(*ptr);
     return std::move(ptr);
   });
 }
 
 
-std::string DnsCache::resolve(const std::string& name) {
-  auto const self = instance();
-  if (auto const lock = *self->map_) {
+std::string DnsCacheImpl::resolve(const std::string& name) {
+  if (auto const lock = *map_) {
     if (auto const it = lock->find(name); it != lock->cend()) {
       return it->second.ip;
     }
@@ -63,7 +61,7 @@ std::string DnsCache::resolve(const std::string& name) {
 
 
 // O(DNS_CACHE_REC_LIMIT log DNS_CACHE_CLEANUP_BOUND)
-void DnsCache::cleanup_if_needed(HashMap& map) const {
+void DnsCacheImpl::cleanup_if_needed(HashMap& map) const {
   if (map.size() <= cache_size_) {
     return;
   }

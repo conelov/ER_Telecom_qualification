@@ -1,6 +1,8 @@
 #pragma once
 
-#include <net_utils/DnsCache.hpp>
+#include <optional>
+
+#include <net_utils/DnsCacheImpl.hpp>
 
 #include <net_utils/aux/MultiThreadedFixture.hpp>
 
@@ -18,14 +20,14 @@ public:
     };
 
     for (std::size_t i = 0; i < 23; ++i) {
-      emplace_worker([gen = str_gen(iterations * i), idx = std::to_string(i)]() mutable {
-        DnsCache::update(gen(), idx);
+      emplace_worker([this, gen = str_gen(iterations * i), idx = std::to_string(i)]() mutable {
+        cache_->update(gen(), idx);
       });
     }
 
     for (std::size_t i = 0; i < 1; ++i) {
-      emplace_worker([gen = str_gen(0)]() mutable {
-        [[maybe_unused]] auto const dummy = DnsCache::resolve(gen());
+      emplace_worker([this, gen = str_gen(0)]() mutable {
+        [[maybe_unused]] auto const dummy = cache_->resolve(gen());
         std::this_thread::yield();
         std::this_thread::sleep_for(std::chrono::microseconds(10));
       });
@@ -34,14 +36,17 @@ public:
 
 
   void up(std::size_t cache_size) {
-    DnsCache::init(cache_size);
+    cache_.emplace(cache_size);
   }
 
 
   void down() override {
     MultiThreadedFixture::down();
-    DnsCache::destroy();
+    cache_.reset();
   }
+
+private:
+  std::optional<DnsCacheImpl> cache_;
 };
 
 

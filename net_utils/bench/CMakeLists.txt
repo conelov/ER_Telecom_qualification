@@ -26,7 +26,7 @@ endfunction()
 
 bench_common(name DnsCache)
 target_sources(${name} PRIVATE
-  DnsCache.cpp
+  DnsCacheImpl.cpp
   "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
 )
 target_link_libraries(${name} PRIVATE
