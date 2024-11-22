@@ -23,7 +23,7 @@ Big O для `DnsCache`.
 * clang -cc1 version 19.1.1 based upon LLVM 19.1.1 default target x86_64-unknown-linux-gnu
 * GNU C++17 (GCC) версия 14.2.0 (x86_64-pc-linux-gnu)
 
-Список целей: <br/>![Снимок экрана от 2024-11-22 15-25-27.png](gifs/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%20%D0%BE%D1%82%202024-11-22%2015-25-27.png)
+Список целей: <br/><img alt="targets.png" height="400" src="gifs/targets.png"/>
 
 Проект зависит только от libc++ | libstdc++ и сопутствующих библиотек. <br/>
 Разрешение зависимостей происходит автоматически с помощью [cmake-CPM](https://github.com/cpm-cmake/CPM.cmake).
