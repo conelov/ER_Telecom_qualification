@@ -29,6 +29,23 @@ function(download_file url to)
 endfunction()
 
 
+function(cpu_count out_var)
+  set(cpu_count_var ${PROJECT_NAME}-cpu_count)
+  if(NOT DEFINED CACHE{${cpu_count_var}})
+    if(UNIX)
+      execute_process(COMMAND sh -c nproc
+        OUTPUT_VARIABLE c
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+    else()
+      set(c 4)
+    endif()
+    set(${cpu_count_var} ${c} CACHE INTERNAL "")
+  endif()
+  set(${out_var} ${${cpu_count_var}} PARENT_SCOPE)
+endfunction()
+
+
 function(auto_fetch)
   set(cpm_folder_var ${CMAKE_CURRENT_FUNCTION}_cpm_folder)
   if(NOT DEFINED CACHE{${cpm_folder_var}})
@@ -70,5 +87,11 @@ function(aux_common target)
   target_common(${name})
   target_sources(${target} PRIVATE
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
+  )
+
+  cpu_count(c)
+  target_compile_definitions(${name} PRIVATE
+    NUT_CPU_COUNT=${c}
   )
 endfunction()

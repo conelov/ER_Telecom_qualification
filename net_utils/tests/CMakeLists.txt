@@ -149,7 +149,6 @@ test_common(tests DnsCache)
 foreach(i IN LISTS tests)
   target_sources(${i} PRIVATE
     DnsCache.cpp
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
   )
   target_link_libraries(${i} PRIVATE
     ER_Telecom_net_utils

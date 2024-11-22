@@ -10,7 +10,7 @@ namespace {
 namespace _ {
 
 
-constexpr auto kCacheSize = 9. / 10;
+constexpr auto kCacheCap = 9. / 10;
 
 
 }// namespace _
@@ -20,16 +20,19 @@ constexpr auto kCacheSize = 9. / 10;
 DnsCacheImpl::~DnsCacheImpl() = default;
 
 
-DnsCacheImpl::DnsCacheImpl(std::size_t cache_limit, std::size_t cache_size)
+DnsCacheImpl::DnsCacheImpl(std::size_t cache_size, std::size_t cache_cap)
     : map_{std::make_shared<HashMap>()}
-    , cache_limit_{cache_limit}
-    , cache_size_{cache_size} {
-  assert(cache_size > cache_limit);
+    , cache_size_{cache_size}
+    , cache_cap_{cache_cap} {
+  assert(cache_cap_ >= cache_size_);
 }
 
 
-DnsCacheImpl::DnsCacheImpl(std::size_t cache_limit)
-    : DnsCacheImpl{cache_limit, cache_limit + static_cast<std::size_t>(std::ceil(std::pow(cache_limit, _::kCacheSize)))} {
+DnsCacheImpl::DnsCacheImpl(std::size_t cache_size)
+    : DnsCacheImpl{
+        cache_size,
+        cache_size + static_cast<std::size_t>(std::ceil(std::pow(cache_size, _::kCacheCap)))// heuristic predict cap
+      } {
 }
 
 
@@ -60,23 +63,24 @@ std::string DnsCacheImpl::resolve(const std::string& name) {
 }
 
 
-// O(size log limit)
 void DnsCacheImpl::cleanup_if_needed(HashMap& map) const {
-  if (map.size() <= cache_size_) {
+  if (map.size() <= cache_cap_) {
     return;
   }
 
+  // O(size * log(size - cap))
   using It                  = HashMap::const_iterator;
   auto constexpr queue_comp = [](It lhs, It rhs) noexcept {
     return lhs->second.timestamp < rhs->second.timestamp;
   };
   std::vector<It> mem;
-  mem.reserve(map.size() - cache_limit_ + 1);
+  auto const      surplus = map.size() - cache_size_;
+  mem.reserve(surplus + 1);
   std::priority_queue<It, decltype(mem), decltype(queue_comp)> queue{queue_comp, std::move(mem)};
 
   for (auto it = map.cbegin(); it != map.cend(); ++it) {
     queue.push(it);
-    if (queue.size() > cache_limit_) {
+    if (queue.size() > surplus) {
       queue.pop();
     }
   }

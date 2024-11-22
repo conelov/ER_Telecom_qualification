@@ -14,8 +14,8 @@ class DnsCacheImpl final {
 public:
   ~DnsCacheImpl();
 
-  DnsCacheImpl(std::size_t cache_limit, std::size_t cache_size);
-  explicit DnsCacheImpl(std::size_t cache_limit);
+  DnsCacheImpl(std::size_t cache_size, std::size_t cache_cap);
+  explicit DnsCacheImpl(std::size_t cache_size);
   DnsCacheImpl();
 
   void                      update(const std::string& name, const std::string& ip);
@@ -37,8 +37,8 @@ private:
 
 private:
   Storage           map_;
-  std::size_t const cache_limit_;
   std::size_t const cache_size_;
+  std::size_t const cache_cap_;
 };
 
 
