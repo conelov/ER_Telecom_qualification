@@ -30,26 +30,13 @@ endfunction()
 
 
 function(auto_fetch)
-  set(cpm_included_var ${CMAKE_CURRENT_FUNCTION}_cpm_included)
-  if(NOT ${cpm_included_var})
-    set(dest "${CPM_SOURCE_CACHE}")
-    if("${dest}" STREQUAL "")
-      set(dest "$ENV{CPM_SOURCE_CACHE}")
-    endif()
-    if("${dest}" STREQUAL "")
-      set(dest "${CMAKE_BINARY_DIR}/cpm_repo")
-    endif()
+  set(file CPM.cmake)
+  cmake_path(SET file_path NORMALIZE "${CMAKE_BINARY_DIR}/${file}")
+  download_file(https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake "${file_path}")
 
-    set(file CPM.cmake)
-    cmake_path(SET cpm_file NORMALIZE "${dest}/${file}")
-    download_file(https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake "${cpm_file}")
-
-    option(CPM_USE_NAMED_CACHE_DIRECTORIES "" ON)
-    option(CPM_USE_LOCAL_PACKAGES "" ON)
-    include("${cpm_file}")
-    set(${cpm_included_var} ON CACHE INTERNAL "")
-  endif()
-
+  option(CPM_USE_NAMED_CACHE_DIRECTORIES "" ON)
+  option(CPM_USE_LOCAL_PACKAGES "" ON)
+  include("${file_path}")
   CPMAddPackage(${ARGN}) # https://github.com/cpm-cmake/CPM.cmake
 endfunction()
 
