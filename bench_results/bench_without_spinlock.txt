@@ -1,0 +1,22 @@
+2024-11-22T08:21:05+03:00
+Running /home/dym/CLionProjects/ER-Telecom_qualification/cmake-build-release/net_utils/bench/ER_Telecom_qualif-bench-DnsCache
+Run on (24 X 5159.77 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x12)
+  L1 Instruction 32 KiB (x12)
+  L2 Unified 512 KiB (x12)
+  L3 Unified 32768 KiB (x2)
+Load Average: 33.29, 22.96, 16.79
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+-----------------------------------------------------------------------------------------
+Benchmark                                               Time             CPU   Iterations
+-----------------------------------------------------------------------------------------
+DnsCacheBench/general/8/4/1000/process_time         0.780 ms         17.5 ms           48
+DnsCacheBench/general/8/2/1000/process_time         0.738 ms         16.6 ms           50
+DnsCacheBench/general/8/1/1000/process_time         0.907 ms         20.6 ms           48
+DnsCacheBench/general/64/32/1000/process_time       0.989 ms         22.5 ms           47
+DnsCacheBench/general/64/4/1000/process_time        0.942 ms         21.6 ms           45
+DnsCacheBench/general/64/1/1000/process_time         1.04 ms         23.5 ms           46
+DnsCacheBench/general/128/64/1000/process_time      0.827 ms         19.0 ms           45
+DnsCacheBench/general/128/4/1000/process_time       0.807 ms         19.0 ms           41
+DnsCacheBench/general/128/1/1000/process_time       0.952 ms         22.5 ms           44

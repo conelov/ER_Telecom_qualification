@@ -35,8 +35,9 @@ public:
   }
 
 
-  void up(std::size_t cache_size) {
-    cache_.emplace(cache_size);
+  template <typename... Args>
+  void up(Args&& ...args) {
+    cache_.emplace(std::forward<Args>(args)...);
   }
 
 
