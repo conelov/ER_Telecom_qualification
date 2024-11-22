@@ -60,7 +60,7 @@ std::string DnsCacheImpl::resolve(const std::string& name) {
 }
 
 
-// O(DNS_CACHE_REC_LIMIT log DNS_CACHE_CLEANUP_BOUND)
+// O(size log limit)
 void DnsCacheImpl::cleanup_if_needed(HashMap& map) const {
   if (map.size() <= cache_size_) {
     return;
