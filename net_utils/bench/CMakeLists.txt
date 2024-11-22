@@ -1,8 +1,20 @@
-include("${PROJECT_SOURCE_DIR}/utils.cmake")
+set(cpu_count_var ${PROJECT_NAME}-cpu_count)
+if(NOT DEFINED CACHE{${cpu_count_var}})
+  if(UNIX)
+    execute_process(COMMAND sh -c nproc
+      OUTPUT_VARIABLE c
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  else()
+    set(c 4)
+  endif()
+  set(${cpu_count_var} ${c} CACHE INTERNAL "")
+endif()
 
 
 function(bench_common out_var suffix)
-  CPMAddPackage(
+  include("${PROJECT_SOURCE_DIR}/utils.cmake")
+  auto_fetch(
     NAME benchmark
     GITHUB_REPOSITORY google/benchmark
     VERSION ${GBENCH_VERSION}
@@ -16,6 +28,10 @@ function(bench_common out_var suffix)
   target_link_libraries(${name} PRIVATE
     benchmark::benchmark
     benchmark::benchmark_main
+  )
+
+  target_compile_definitions(${name} PRIVATE
+    CPU_COUNT=${${cpu_count_var}}
   )
 
   aux_common(${name})
