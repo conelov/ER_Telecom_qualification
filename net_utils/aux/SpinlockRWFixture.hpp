@@ -12,7 +12,7 @@
 namespace nut::aux {
 
 
-template<typename Mx_>
+template<typename Mx_, bool try_lock_mode>
 class SpinlockRWFixture : public MultiThreadedRWFixture {
 public:
   int data;
@@ -35,14 +35,26 @@ public:
         iter_counter_.fetch_add(1, std::memory_order_relaxed);
       },
       [this](auto...) {
+        auto const do_lock = [this] {
+          if constexpr (try_lock_mode) {
+            do {
+              auto lk = std::unique_lock{*sl_, std::try_to_lock};
+              if (lk) {
+                return lk;
+              }
+            } while (true);
+          } else {
+            return std::unique_lock{*sl_};
+          }
+        };
         {
-          std::unique_lock const lk{*sl_};
-          auto volatile&         dummy = data;
+          auto const     lk    = do_lock();
+          auto volatile& dummy = data;
           ++dummy;
         }
         {
-          std::unique_lock const lk{*sl_};
-          auto volatile&         dummy = data;
+8          auto const     lk    = do_lock();
+          auto volatile& dummy = data;
           --dummy;
         }
         iter_counter_.fetch_add(1, std::memory_order_relaxed);

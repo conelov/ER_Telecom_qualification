@@ -11,7 +11,7 @@ namespace {
 using namespace nut;
 
 
-std::size_t constexpr rw_rel_mutli = 100'000;
+std::size_t constexpr rw_rel_multi = 100'000;
 
 
 template<typename Mx_>
@@ -20,7 +20,7 @@ class SpinlockRWBench
     , public aux::SpinlockRWFixture<Mx_> {
 public:
   void SetUp(benchmark::State& state) override {
-    this->set_rw_relation(static_cast<float>(state.range(0)) / rw_rel_mutli);
+    this->set_rw_relation(static_cast<float>(state.range(0)) / rw_rel_multi);
     state.counters["rs"] = this->readers;
     state.counters["ws"] = this->writers;
 
@@ -47,7 +47,7 @@ void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
   for (auto const rw_rel : rw_rel_range) {
     for (auto const rit : {10'000, 100'000, 1'000'000}) {
       for (auto const wit : {1'000, 10'000, 100'000}) {
-        b->Args({static_cast<std::int64_t>(std::round(rw_rel * rw_rel_mutli)), rit, wit});
+        b->Args({static_cast<std::int64_t>(std::round(rw_rel * rw_rel_multi)), rit, wit});
       }
     }
   }

@@ -3,8 +3,6 @@
 #include <atomic>
 #include <cassert>
 #include <cstdint>
-#include <cstring>
-#include <limits>
 
 #include <net_utils/utils.hpp>
 
@@ -33,7 +31,7 @@ public:
       curr.w_lock  = false;
       if (count_.compare_exchange_strong(
             curr,
-            State{.readers = static_cast<StateCounter>(curr.readers + 1), .writers = 0, .w_lock = false},
+            {.readers = static_cast<StateCounter>(curr.readers + 1), .writers = 0, .w_lock = false},
             std::memory_order_acq_rel,
             std::memory_order_acquire)) {
         break;
@@ -61,22 +59,50 @@ public:
 
 
   void lock() noexcept {
-    auto  curr = count_.load(std::memory_order_acquire);
-    State desired;
+    lock_exclusive(false);
+  }
+
+
+  bool try_lock() noexcept {
+    return lock_exclusive(true);
+  }
+
+
+  void unlock() noexcept {
+    auto curr = count_.load(std::memory_order_acquire);
     do {
+      assert(curr.readers == 0);
+      assert(curr.writers > 0);
+      assert(curr.w_lock);
       if (count_.compare_exchange_strong(
             curr,
-            desired = {.readers = curr.readers, .writers = static_cast<StateCounter>(curr.writers + 1), .w_lock = curr.w_lock},
+            {.readers = 0, .writers = static_cast<StateCounter>(curr.writers - 1), .w_lock = false},
             std::memory_order_acq_rel,
             std::memory_order_acquire)) {
         break;
       }
       thread_pause();
     } while (true);
+  }
 
+private:
+  bool lock_exclusive(bool const try_to_lock) noexcept {
+    auto curr = count_.load(std::memory_order_acquire);
+    do {
+      if (try_to_lock && curr.w_lock) {
+        return false;
+      }
+
+      if (State const desired{.readers = curr.readers, .writers = static_cast<StateCounter>(curr.writers + 1), .w_lock = curr.w_lock};
+        count_.compare_exchange_strong(curr, desired, std::memory_order_acq_rel, std::memory_order_acquire)) {
+        curr = desired;
+        break;
+      }
+
+      thread_pause();
+    } while (true);
 
     // wait readers and exclusive write
-    curr = desired;
     do {
       curr.readers = 0;
       curr.w_lock  = false;
@@ -87,41 +113,15 @@ public:
             std::memory_order_acquire)) {
         break;
       }
-      curr = count_.load(std::memory_order_acquire);
-    } while (true);
-  }
 
-
-  bool try_lock() noexcept {
-    auto  curr = count_.load(std::memory_order_acquire);
-    if (count_.compare_exchange_strong(
-          curr,
-          // TODO .readers wait
-          {.readers = 0, .writers = static_cast<StateCounter>(curr.writers + 1), .w_lock = true},
-          std::memory_order_acq_rel,
-          std::memory_order_acquire)) {
-      return true;
-    }
-
-    return false;
-  }
-
-
-  void unlock() noexcept {
-    auto curr = count_.load(std::memory_order_acquire);
-    do {
-      assert(curr.readers == 0);
-      assert(curr.writers > 0);
-      assert(curr.w_lock == true);
-      if (count_.compare_exchange_strong(
-            curr,
-            {.readers = 0, .writers = static_cast<StateCounter>(curr.writers - 1), .w_lock = false},
-            std::memory_order_acq_rel,
-            std::memory_order_acquire)) {
-        break;
-      }
       thread_pause();
+      curr = count_.load(std::memory_order_acquire);
+      if (try_to_lock && curr.readers == 0 && curr.w_lock) {
+        return false;
+      }
     } while (true);
+
+    return true;
   }
 
 private:
