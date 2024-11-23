@@ -12,6 +12,7 @@
 namespace nut {
 
 
+/// Read-write spinlock with priority for writers
 class SpinlockRW final {
 public:
   ~SpinlockRW() {
@@ -95,10 +96,14 @@ public:
     auto  curr = count_.load(std::memory_order_acquire);
     if (count_.compare_exchange_strong(
           curr,
+          // TODO .readers wait
           {.readers = 0, .writers = static_cast<StateCounter>(curr.writers + 1), .w_lock = true},
           std::memory_order_acq_rel,
           std::memory_order_acquire)) {
+      return true;
     }
+
+    return false;
   }
 
 

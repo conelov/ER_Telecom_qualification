@@ -1,74 +1,82 @@
-#include <chrono>
-#include <thread>
-
 #include <benchmark/benchmark.h>
 
-#include <net_utils/SpinlockRW.hpp>
+#include <net_utils/aux/SpinlockRWFixture.hpp>
 
-#include <net_utils/aux/MultiThreadedFixture.hpp>
-
-
-using namespace nut;
+#include <net_utils/bench/common.hpp>
 
 
 namespace {
 
 
+using namespace nut;
+
+
 std::size_t constexpr rw_rel_mutli = 100'000;
 
 
+template<typename Mx_>
 class SpinlockRWBench
     : public benchmark::Fixture
-    , public MultiThreadedFixture {
+    , public aux::SpinlockRWFixture<Mx_> {
 public:
   void SetUp(benchmark::State& state) override {
-    // std::size_t const cache_size = state.range(0);
-    // state.counters["size"]       = cache_size;
-    //
-    // std::size_t const cache_cap = state.range(1);
-    // state.counters["cap"]       = cache_cap;
-    //
-    // rw_relation          = static_cast<float>(state.range(3)) / rw_rel_mutli;
-    // state.counters["rs"] = readers();
-    // state.counters["ws"] = writers();
-    //
-    // iterations_            = state.range(2);
-    // state.counters["its"] = iterations_;
-    //
-    // state.counters["rate"] = benchmark::Counter(iterations_, benchmark::Counter::kIsRate);
-    //
-    // up(cache_size, cache_cap);
+    this->set_rw_relation(static_cast<float>(state.range(0)) / rw_rel_mutli);
+    state.counters["rs"] = this->readers;
+    state.counters["ws"] = this->writers;
+
+
+    auto const r_iters         = state.range(1);
+    state.counters["rit_rate"] = benchmark::Counter(r_iters / this->readers, benchmark::Counter::kIsRate);
+    state.counters["rit"]      = r_iters;
+
+    auto const w_iters         = state.range(2);
+    state.counters["wit_rate"] = benchmark::Counter(w_iters / this->writers, benchmark::Counter::kIsRate);
+    state.counters["wit"]      = w_iters;
+
+    this->up(r_iters, w_iters);
   }
 
+
   void TearDown(benchmark::State& state) override {
-    down();
-    // state.SetComplexityN(iterations_);
+    this->down();
   }
 };
 
 
 void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
-  std::size_t constexpr size_lo = 8;
-  for (auto const rw_rel : {9. / 10, 5. / 10, 1. / 10}) {
-    for (auto const size : benchmark::CreateRange(size_lo, 2 << 12, 2 << 2)) {
-      for (auto const cap : benchmark::CreateDenseRange(15,  30, 5)) {
-        b->Args({size, static_cast<std::int64_t>(size * (cap / 10.)), size << 1, static_cast<std::int64_t>(std::round(rw_rel * rw_rel_mutli))});
+  for (auto const rw_rel : rw_rel_range) {
+    for (auto const rit : {10'000, 100'000, 1'000'000}) {
+      for (auto const wit : {1'000, 10'000, 100'000}) {
+        b->Args({static_cast<std::int64_t>(std::round(rw_rel * rw_rel_mutli)), rit, wit});
       }
     }
   }
 }
 
 
-BENCHMARK_DEFINE_F(DnsCacheBench, general)(benchmark::State& state) {
+BENCHMARK_TEMPLATE_DEFINE_F(SpinlockRWBench, shared_mutex, std::shared_mutex)(benchmark::State& state) {
   for (auto _ : state) {
-    compute();
+    start();
   }
 }
 
 
-BENCHMARK_REGISTER_F(DnsCacheBench, general)
+BENCHMARK_REGISTER_F(SpinlockRWBench, shared_mutex)
   ->Apply(GenerateDependentArgs)
-  ->Unit(benchmark::kMillisecond)
+  ->Unit(benchmark::kNanosecond)
+  ->MeasureProcessCPUTime();
+
+
+BENCHMARK_TEMPLATE_DEFINE_F(SpinlockRWBench, spinlock_rw, SpinlockRW)(benchmark::State& state) {
+  for (auto _ : state) {
+    start();
+  }
+}
+
+
+BENCHMARK_REGISTER_F(SpinlockRWBench, spinlock_rw)
+  ->Apply(GenerateDependentArgs)
+  ->Unit(benchmark::kNanosecond)
   ->MeasureProcessCPUTime();
 
 

@@ -31,7 +31,6 @@ public:
           std::shared_lock const lk{*sl_};
           [[maybe_unused]] auto volatile dummy = data;
           ++dummy;
-          thread_pause();
         }
         iter_counter_.fetch_add(1, std::memory_order_relaxed);
       },
@@ -47,6 +46,7 @@ public:
           --dummy;
         }
         iter_counter_.fetch_add(1, std::memory_order_relaxed);
+        thread_pause();
       });
   }
 

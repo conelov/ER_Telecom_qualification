@@ -7,7 +7,7 @@ function(bench_common out_var suffix)
     OPTIONS "BENCHMARK_ENABLE_TESTING OFF"
   )
 
-  set(name ${PROJECT_NAME}-bench-${suffix})
+  set(name ${PROJECT_NAME}-bench${suffix})
   add_executable(${name})
   target_common(${name})
 
@@ -26,12 +26,12 @@ function(bench_common out_var suffix)
 endfunction()
 
 
-bench_common(name DnsCache)
+bench_common(name "")
 target_sources(${name} PRIVATE
   common.hpp
-  DnsCacheImpl.cpp
+#  DnsCacheImpl.cpp
   SpinlockRW.cpp
 )
-target_link_libraries(${name} PRIVATE
-  ER_Telecom_net_utils
-)
+#target_link_libraries(${name} PRIVATE
+#  ER_Telecom_net_utils
+#)
