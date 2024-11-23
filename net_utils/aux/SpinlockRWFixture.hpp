@@ -12,6 +12,7 @@
 namespace nut::aux {
 
 
+template<typename Mx_>
 class SpinlockRWFixture : public MultiThreadedRWFixture {
 public:
   int data;
@@ -61,8 +62,8 @@ public:
   }
 
 private:
-  std::optional<SpinlockRW> sl_;
-  std::atomic<std::size_t>  iter_counter_;
+  std::optional<Mx_>       sl_;
+  std::atomic<std::size_t> iter_counter_;
 };
 
 
