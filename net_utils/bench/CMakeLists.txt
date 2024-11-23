@@ -28,7 +28,9 @@ endfunction()
 
 bench_common(name DnsCache)
 target_sources(${name} PRIVATE
+  common.hpp
   DnsCacheImpl.cpp
+  SpinlockRW.cpp
 )
 target_link_libraries(${name} PRIVATE
   ER_Telecom_net_utils

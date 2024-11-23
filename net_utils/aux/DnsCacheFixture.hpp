@@ -4,47 +4,40 @@
 #include <optional>
 
 #include <net_utils/DnsCacheImpl.hpp>
+#include <net_utils/utils.hpp>
 
-#include <net_utils/aux/MultiThreadedFixture.hpp>
-
-
-namespace nut {
+#include <net_utils/aux/MultiThreadedRWFixture.hpp>
 
 
-class DnsCacheFixture : public MultiThreadedFixture {
+namespace nut::aux {
+
+
+class DnsCacheFixture : public MultiThreadedRWFixture {
 public:
-  float rw_relation = 1. / 2;
+  template<typename... Args>
+  void up(float rw_relation, std::size_t r_iters, std::size_t w_iters, Args&&... args) {
+    cache_.emplace(std::forward<Args>(args)...);
 
-public:
-  void compute() {
     auto const str_gen = [](std::size_t start) {
       return [i = start]() mutable {
         return std::to_string(i++);
       };
     };
 
-    for (std::size_t i = 0; i < writers_; ++i) {
-      emplace_worker([this, gen = str_gen(iterations * i), idx = std::to_string(i)]() mutable {
-        cache_->update(gen(), idx);
+    MultiThreadedRWFixture::up(
+      rw_relation,
+      r_iters,
+      w_iters,
+      [this, str_gen](std::size_t idx, auto...) {
+        return [this, gen = str_gen(idx)]() mutable {
+          [[maybe_unused]] auto const volatile dummy = cache_->resolve(gen());
+        };
+      },
+      [this, str_gen](auto idx, auto count) {
+        return [this, gen = str_gen(idx * count), idx = std::to_string(idx)]() mutable {
+          cache_->update(gen(), idx);
+        };
       });
-    }
-
-    for (std::size_t i = 0; i < readers_; ++i) {
-      emplace_worker([this, gen = str_gen(0)]() mutable {
-        [[maybe_unused]] auto const dummy = cache_->resolve(gen());
-        std::this_thread::yield();
-      });
-    }
-  }
-
-
-  template<typename... Args>
-  void up(Args&&... args) {
-    cache_.emplace(std::forward<Args>(args)...);
-    assert(rw_relation >= 0);
-    assert(rw_relation <= 1);
-    readers_ = std::round(NUT_CPU_COUNT * rw_relation);
-    writers_ = NUT_CPU_COUNT - readers_;
   }
 
 
@@ -52,20 +45,6 @@ public:
     MultiThreadedFixture::down();
     cache_.reset();
   }
-
-
-  [[nodiscard]] std::size_t readers() const {
-    return readers_;
-  }
-
-
-  [[nodiscard]] std::size_t writers() const {
-    return writers_;
-  }
-
-private:
-  std::size_t readers_;
-  std::size_t writers_;
 
 private:
   std::optional<DnsCacheImpl> cache_;

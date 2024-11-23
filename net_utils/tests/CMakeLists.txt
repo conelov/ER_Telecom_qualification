@@ -154,3 +154,11 @@ foreach(i IN LISTS tests)
     ER_Telecom_net_utils
   )
 endforeach()
+
+
+test_common(tests SpinlockRW)
+foreach(i IN LISTS tests)
+  target_sources(${i} PRIVATE
+    SpinlockRW.cpp
+  )
+endforeach()

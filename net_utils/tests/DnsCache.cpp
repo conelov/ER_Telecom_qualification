@@ -3,10 +3,10 @@
 #include <net_utils/aux/DnsCacheFixture.hpp>
 
 
-using namespace nut;
-
-
 namespace {
+
+
+using namespace nut;
 
 
 TEST(DnsCacheTest, smoke) {
@@ -20,7 +20,12 @@ TEST(DnsCacheTest, smoke) {
 class DnsCacheTestF
     : public ::testing::Test
     , public DnsCacheFixture {
-private:
+protected:
+  void SetUp() override {
+    up(1. / 2, 10'000, 10'000, 100, 125);
+  }
+
+
   void TearDown() override {
     down();
   }
@@ -28,12 +33,7 @@ private:
 
 
 TEST_F(DnsCacheTestF, high_load) {
-  iterations = 500;
-
-  auto constexpr cache_size = 2'500;
-  up(cache_size);
-
-  ASSERT_NO_THROW(compute());
+  ASSERT_NO_THROW(start());
   SUCCEED();
 }
 

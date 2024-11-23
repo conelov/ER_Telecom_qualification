@@ -80,6 +80,9 @@ function(target_common target)
     $<$<CONFIG:DEBUG>:-v>
     $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
   )
+  target_link_options(${target} PRIVATE
+    $<$<CONFIG:DEBUG>:-v>
+  )
 endfunction()
 
 
@@ -87,6 +90,8 @@ function(aux_common target)
   target_common(${name})
   target_sources(${target} PRIVATE
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/SpinlockRWFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
   )
 

@@ -1,7 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <type_traits>
+
+#include <net_utils/SpinlockRW.hpp>
+#include <net_utils/utils.hpp>
 
 
 namespace nut {
@@ -33,9 +38,18 @@ public:
   }
 
 
-  template<typename Mod>
-  std::enable_if_t<std::is_invocable_r_v<MutablePtr, Mod, MutablePtr>, void>
+  template<typename Mod, bool try_exclusive = false>
+  std::enable_if_t<std::is_invocable_r_v<MutablePtr, Mod, MutablePtr, bool>, void>
   modify(Mod&& mod) {
+    auto const lk = [this]() noexcept {
+      if constexpr (try_exclusive) {
+        std::unique_lock lk{lock_, std::try_to_lock};
+        return std::pair{std::move(lk), lk.owns_lock()};
+      } else {
+        return std::shared_lock{lock_};
+      }
+    }();
+
     do {
       MutablePtr p_old = std::atomic_load_explicit(&p_, std::memory_order_acquire);
       if (std::atomic_compare_exchange_strong_explicit(
@@ -45,11 +59,16 @@ public:
             std::memory_order_release, std::memory_order_relaxed)) {
         break;
       }
+      thread_pause();
     } while (true);
   }
 
 private:
+  using Lock = SpinlockRW<>;
+
+private:
   MutablePtr p_;
+  Lock       lock_;
 };
 
 

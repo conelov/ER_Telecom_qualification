@@ -3,7 +3,9 @@
 
 #include <benchmark/benchmark.h>
 
-#include <net_utils/aux/DnsCacheFixture.hpp>
+#include <net_utils/SpinlockRW.hpp>
+
+#include <net_utils/aux/MultiThreadedFixture.hpp>
 
 
 using namespace nut;
@@ -15,27 +17,27 @@ namespace {
 std::size_t constexpr rw_rel_mutli = 100'000;
 
 
-class DnsCacheBench
+class SpinlockRWBench
     : public benchmark::Fixture
-    , public DnsCacheFixture {
+    , public MultiThreadedFixture {
 public:
   void SetUp(benchmark::State& state) override {
-    std::size_t const cache_size = state.range(0);
-    state.counters["size"]       = cache_size;
-
-    std::size_t const cache_cap = state.range(1);
-    state.counters["cap"]       = cache_cap;
-
-    rw_relation          = static_cast<float>(state.range(3)) / rw_rel_mutli;
-    state.counters["rs"] = readers();
-    state.counters["ws"] = writers();
-
-    iterations_            = state.range(2);
-    state.counters["its"] = iterations_;
-
-    state.counters["rate"] = benchmark::Counter(iterations_, benchmark::Counter::kIsRate);
-
-    up(cache_size, cache_cap);
+    // std::size_t const cache_size = state.range(0);
+    // state.counters["size"]       = cache_size;
+    //
+    // std::size_t const cache_cap = state.range(1);
+    // state.counters["cap"]       = cache_cap;
+    //
+    // rw_relation          = static_cast<float>(state.range(3)) / rw_rel_mutli;
+    // state.counters["rs"] = readers();
+    // state.counters["ws"] = writers();
+    //
+    // iterations_            = state.range(2);
+    // state.counters["its"] = iterations_;
+    //
+    // state.counters["rate"] = benchmark::Counter(iterations_, benchmark::Counter::kIsRate);
+    //
+    // up(cache_size, cache_cap);
   }
 
   void TearDown(benchmark::State& state) override {

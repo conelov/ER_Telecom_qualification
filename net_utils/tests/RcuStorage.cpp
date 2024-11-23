@@ -4,13 +4,13 @@
 
 #include <net_utils/RcuStorage.hpp>
 
-#include <net_utils/aux/MultiThreadedFixture.hpp>
-
-
-using namespace nut;
+#include <net_utils/aux/MultiThreadedRWFixture.hpp>
 
 
 namespace {
+
+
+using namespace nut;
 
 
 std::size_t constexpr num_readers = 10;
@@ -21,7 +21,7 @@ using Counts                      = std::array<std::uintmax_t, num_writers>;
 template<typename T_>
 class RcuStorageTest
     : public ::testing::Test
-    , public MultiThreadedFixture {
+    , public MultiThreadedRWFixture {
 protected:
   T_ shared_data;
 
