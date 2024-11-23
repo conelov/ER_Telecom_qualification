@@ -13,12 +13,15 @@ class SpinlockRWTest
     : public ::testing::Test
     , public aux::SpinlockRWFixture {
 protected:
-  static auto constexpr r_iters = 1000;
-  static auto constexpr w_iters = 25;
+  static auto constexpr r_iters = 50'000;
+  static auto constexpr w_iters = 10'000;
 
 protected:
   void SetUp() override {
-    up(9. / 10, r_iters, w_iters);
+    readers = 100;
+    writers = 100;
+
+    up(r_iters, w_iters);
   }
 };
 
@@ -27,7 +30,7 @@ TEST_F(SpinlockRWTest, smoke) {
   start();
   down();
   ASSERT_EQ(data, 0);
-  ASSERT_EQ(iter_counter(), r_iters * readers() + w_iters * writers());
+  ASSERT_EQ(iter_counter(), r_iters * readers + w_iters * writers);
 }
 
 

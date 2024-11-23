@@ -17,19 +17,20 @@ public:
   int data;
 
 public:
-  void up(float rw_relation, std::size_t r_iters, std::size_t w_iters) {
+  void up(std::size_t r_iters, std::size_t w_iters) {
     sl_.emplace();
     data = 0;
     iter_counter_.store(0, std::memory_order_release);
 
     MultiThreadedRWFixture::up(
-      rw_relation,
       r_iters,
       w_iters,
       [this](auto...) {
         {
           std::shared_lock const lk{*sl_};
           [[maybe_unused]] auto volatile dummy = data;
+          ++dummy;
+          thread_pause();
         }
         iter_counter_.fetch_add(1, std::memory_order_relaxed);
       },
@@ -50,7 +51,7 @@ public:
 
 
   void down() override {
-    MultiThreadedFixture::down();
+    MultiThreadedRWFixture::down();
     sl_.reset();
   }
 
@@ -60,11 +61,8 @@ public:
   }
 
 private:
-  using SL = SpinlockRW<>;
-
-private:
-  std::optional<SL>        sl_;
-  std::atomic<std::size_t> iter_counter_;
+  std::optional<SpinlockRW> sl_;
+  std::atomic<std::size_t>  iter_counter_;
 };
 
 

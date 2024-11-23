@@ -12,38 +12,36 @@ namespace nut::aux {
 
 class MultiThreadedRWFixture : public MultiThreadedFixture {
 public:
+  std::size_t readers;
+  std::size_t writers;
+
+public:
   template<typename RGen, typename WGen>
-  void up(float rw_relation, std::size_t r_iters, std::size_t w_iters, RGen&& rgen, WGen&& wgen) {
+  void up(std::size_t r_iters, std::size_t w_iters, RGen&& rgen, WGen&& wgen) {
     MultiThreadedFixture::up();
 
+    for (std::size_t i = 0; i < writers; ++i) {
+      emplace_worker(w_iters, carry(wgen, i, writers));
+    }
+
+    for (std::size_t i = 0; i < readers; ++i) {
+      emplace_worker(r_iters, carry(rgen, i, readers));
+    }
+  }
+
+
+  void down() override {
+    MultiThreadedFixture::down();
+  }
+
+
+  void set_rw_relation(float rw_relation) {
     assert(rw_relation >= 0);
     assert(rw_relation <= 1);
-    readers_ = std::round(NUT_CPU_COUNT * rw_relation);
-    writers_ = NUT_CPU_COUNT - readers_;
-
-    for (std::size_t i = 0; i < writers_; ++i) {
-      emplace_worker(w_iters, carry(wgen, i, writers_));
-    }
-
-    for (std::size_t i = 0; i < readers_; ++i) {
-      emplace_worker(r_iters, carry(rgen, i, readers_));
-    }
+    readers = std::round(NUT_CPU_COUNT * rw_relation);
+    writers = NUT_CPU_COUNT - readers;
   }
-
-
-  [[nodiscard]] std::size_t readers() const {
-    return readers_;
-  }
-
-
-  [[nodiscard]] std::size_t writers() const {
-    return writers_;
-  }
-
-private:
-  std::size_t readers_;
-  std::size_t writers_;
 };
 
 
-}// namespace nut
+}// namespace nut::aux

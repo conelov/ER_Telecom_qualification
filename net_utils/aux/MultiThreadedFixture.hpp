@@ -42,7 +42,6 @@ public:
 
   template<typename Fn>
   void emplace_worker(std::size_t iters, Fn&& fn) {
-    assert(threads_.size() < NUT_CPU_COUNT);
     assert(iters > 0);
     threads_.emplace_back(
       [iters, this](auto fn) {
