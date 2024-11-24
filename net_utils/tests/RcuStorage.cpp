@@ -1,10 +1,10 @@
-#include <array>
-
+#include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
 
 #include <net_utils/RcuStorage.hpp>
+#include <net_utils/SpinlockRW.hpp>
 
-#include <net_utils/aux/MultiThreadedRWFixture.hpp>
+#include <net_utils/aux/RcuStorageFixture.hpp>
 
 
 namespace {
@@ -13,57 +13,40 @@ namespace {
 using namespace nut;
 
 
-std::size_t constexpr num_readers = 10;
-std::size_t constexpr num_writers = 3;
-using Counts                      = std::array<std::uintmax_t, num_writers>;
-
-
-template<typename T_>
+template<typename Mx_>
 class RcuStorageTest
     : public ::testing::Test
-    , public MultiThreadedRWFixture {
+    , public aux::RcuStorageFixture<Mx_> {
 protected:
-  T_ shared_data;
+  static auto constexpr r_iters              = 100'000;
+  static auto constexpr w_iters              = 10'000;
+  static auto constexpr w_exclusive_relation = 5. / 10;
+  static_assert(w_exclusive_relation >= 0);
+  static_assert(w_exclusive_relation <= 1);
 
 protected:
+  void SetUp() override {
+    this->set_rw_relation(1. / 2);
+    this->readers *= 2;
+    this->writers = this->writers * 2;
+    this->up(r_iters, w_iters, this->writers * w_exclusive_relation);
+  }
+
+
   void TearDown() override {
-    shared_data = {};
+    this->down();
   }
 };
 
 
-using Storage = ::testing::Types<RcuStorage<Counts>>;
+using Storage = ::testing::Types<std::shared_mutex, SpinlockRW<>>;
 TYPED_TEST_SUITE(RcuStorageTest, Storage);
 
 
 TYPED_TEST(RcuStorageTest, smoke) {
-  Counts counts{};
-
-  for (std::size_t i = 0; i < num_readers; ++i) {
-    this->emplace_worker([this] {
-      if (!*this->shared_data) {
-        return;
-      }
-      [[maybe_unused]] auto v = **this->shared_data;
-      std::this_thread::sleep_for(std::chrono::microseconds(10));
-    });
-  }
-
-
-  for (std::size_t i = 0; i < num_writers; ++i) {
-    this->emplace_worker([this, &c = counts[i], i] {
-      this->shared_data.modify([&c, i](auto ptr) {
-        if (!ptr) {
-          ptr = std::make_shared<typename decltype(this->shared_data)::value_type>();
-        }
-        ptr->at(i) = ++c;
-        return std::move(ptr);
-      });
-    });
-  }
-
+  this->start();
   this->down();
-  ASSERT_EQ(**this->shared_data, counts);
+  EXPECT_THAT(*this->storage().load(), testing::ElementsAreArray(std::vector(this->writers, this->w_iters)));
 }
 
 

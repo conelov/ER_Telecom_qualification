@@ -92,6 +92,7 @@ function(aux_common target)
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/SpinlockRWFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/RcuStorageFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
   )
 

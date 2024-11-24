@@ -9,8 +9,6 @@
 
 
 namespace nut::aux {
-
-
 class MultiThreadedFixture {
 public:
   virtual ~MultiThreadedFixture() {
@@ -68,4 +66,4 @@ private:
 };
 
 
-}// namespace nut
+}// namespace nut::aux

@@ -22,8 +22,8 @@ function(test_common_base out_var suffix)
   add_test(NAME ${name} COMMAND "$<TARGET_FILE:${name}>")
 
   target_link_libraries(${name} PRIVATE
-    GTest::gtest
-    GTest::gtest_main
+    GTest::gmock
+    GTest::gmock_main
   )
 
   set(${out_var} ${name} PARENT_SCOPE)
