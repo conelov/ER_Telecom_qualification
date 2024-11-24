@@ -1,3 +1,7 @@
+set(target_bench_all_build ${PROJECT_NAME}_bench_all_build)
+add_custom_target(${target_bench_all_build})
+
+
 function(bench_common out_var suffix)
   include("${PROJECT_SOURCE_DIR}/utils.cmake")
   auto_fetch(
@@ -22,16 +26,28 @@ function(bench_common out_var suffix)
 
   aux_common(${name})
 
+  add_dependencies(${target_bench_all_build} ${name})
   set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
 
-bench_common(name "")
+bench_common(name SharedMX_std)
 target_sources(${name} PRIVATE
   common.hpp
-#  DnsCacheImpl.cpp
-  SpinlockRW.cpp
+  SharedMX_std.cpp
 )
-#target_link_libraries(${name} PRIVATE
-#  ER_Telecom_net_utils
-#)
+
+bench_common(name SharedMX_SpinlockRW)
+target_sources(${name} PRIVATE
+  common.hpp
+  SharedMX_SpinlockRW.cpp
+)
+
+bench_common(name DnsCacheImpl)
+target_sources(${name} PRIVATE
+  common.hpp
+  DnsCacheImpl.cpp
+)
+target_link_libraries(${name} PRIVATE
+  ER_Telecom_net_utils
+)
