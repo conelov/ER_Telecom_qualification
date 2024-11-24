@@ -21,11 +21,11 @@ public:
     MultiThreadedFixture::up();
 
     for (std::size_t i = 0; i < writers; ++i) {
-      emplace_worker(w_iters, carry(wgen, i, writers));
+      emplace_worker(w_iters, carry(wgen, i));
     }
 
     for (std::size_t i = 0; i < readers; ++i) {
-      emplace_worker(r_iters, carry(rgen, i, readers));
+      emplace_worker(r_iters, carry(rgen, i));
     }
   }
 

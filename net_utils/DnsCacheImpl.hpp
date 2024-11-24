@@ -20,7 +20,7 @@ public:
   ~DnsCacheImplRcu();
 
   DnsCacheImplRcu(std::size_t cache_size, std::size_t cache_cap);
-  explicit DnsCacheImplRcu(std::size_t cache_size);
+  DnsCacheImplRcu(std::size_t cache_size);
   DnsCacheImplRcu();
 
   void                      update(const std::string& name, const std::string& ip);

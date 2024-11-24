@@ -27,7 +27,7 @@ public:
       r_iters,
       w_iters,
 
-      [this](auto...) {
+      [this]{
         auto const array_ptr = v_->load();
         if (!array_ptr) {
           thread_pause();
@@ -39,12 +39,12 @@ public:
         }
       },
 
-      [this, exclusive_writer_count](std::size_t w_index, auto...) {
-        v_->modify(exclusive_writer_count <= w_index, [this, w_index](auto a_ptr) {
+      [this, exclusive_writer_count](std::size_t idx) {
+        v_->modify(exclusive_writer_count <= idx, [this, idx](auto a_ptr) {
           if (!a_ptr) {
             a_ptr = std::make_shared<ArrayCount>(writers, 0);
           }
-          ++a_ptr->at(w_index);
+          ++a_ptr->at(idx);
           return std::move(a_ptr);
         });
       });
