@@ -2,13 +2,12 @@
 #include <cmath>
 #include <mutex>
 #include <queue>
+#include <vector>
 
 #include <net_utils/DnsCacheImpl.hpp>
-#include <net_utils/SpinlockRW.hpp>
 
 
-namespace nut {
-namespace aux {
+namespace nut::aux {
 namespace {
 
 
@@ -24,7 +23,7 @@ DnsCacheImplRcu<Mx_>::~DnsCacheImplRcu() = default;
 
 template<typename Mx_>
 DnsCacheImplRcu<Mx_>::DnsCacheImplRcu(std::size_t cache_size, std::size_t cache_cap)
-    : map_{std::make_shared<HashMap>()}
+    : st_{std::make_shared<HashMap>()}
     , cache_size_{cache_size}
     , cache_cap_{cache_cap} {
   assert(cache_cap_ >= cache_size_);
@@ -47,8 +46,8 @@ DnsCacheImplRcu<Mx_>::DnsCacheImplRcu()
 
 
 template<typename Mx_>
-void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip_in) const {
-  map_.modify([this, &name, &ip_in](auto ptr) {
+void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip_in) {
+  st_.modify([this, &name, &ip_in](auto ptr) {
     assert(ptr);
     auto& [ip, time] = (*ptr)[name];
     ip               = ip_in;
@@ -60,8 +59,8 @@ void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip
 
 
 template<typename Mx_>
-std::string DnsCacheImplRcu<Mx_>::resolve(const std::string& name) {
-  if (auto const lock = *map_) {
+std::string DnsCacheImplRcu<Mx_>::resolve(const std::string& name) const {
+  if (auto const lock = *st_) {
     if (auto const it = lock->find(name); it != lock->cend()) {
       return it->second.ip;
     }
@@ -99,11 +98,8 @@ void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
   }
 }
 
-template<>
-class DnsCacheImplRcu<std::mutex>;
-
-template<>
-class DnsCacheImplRcu<SpinlockRW<>>;
+template class DnsCacheImplRcu<std::shared_mutex>;
+template class DnsCacheImplRcu<SpinlockRW<>>;
 
 
 template<typename Mx_>
@@ -111,28 +107,34 @@ DnsCacheImplLRU<Mx_>::~DnsCacheImplLRU() = default;
 
 
 template<typename Mx_>
-DnsCacheImplLRU<Mx_>::DnsCacheImplLRU() = default;
-
-
-template<typename Mx_>
-void DnsCacheImplLRU<Mx_>::update(const std::string& name, const std::string& ip) const {
-
+DnsCacheImplLRU<Mx_>::DnsCacheImplLRU(std::size_t cache_size)
+    : st_{cache_size} {
 }
 
 
 template<typename Mx_>
-std::string DnsCacheImplLRU<Mx_>::resolve(const std::string& name) {
-  auto const it = map_.find(name);
-  if (it == map_.end()) {
-    return {};
+void DnsCacheImplLRU<Mx_>::update(const std::string& name, const std::string& ip) {
+  {
+    std::lock_guard const lock{mx_};
+    st_.put(name, ip);
   }
-
-  list_.splice(list_.cbegin(), list_, it->second);
-  return it->second->second;
 }
 
 
-}// namespace aux
+template<typename Mx_>
+std::string DnsCacheImplLRU<Mx_>::resolve(const std::string& name) const {
+  {
+    std::shared_lock const lock{mx_};
+    if (auto const out_ptr = st_.get(name)) {
+      return *out_ptr;
+    } else {
+      return {};
+    }
+  }
+}
+
+template class DnsCacheImplLRU<std::shared_mutex>;
+template class DnsCacheImplLRU<SpinlockRW<>>;
 
 
-}// namespace nut
+}// namespace nut::aux

@@ -17,7 +17,7 @@ public:
   using key_proj_type = KeyProj_;
 
 public:
-  LruStorage(std::size_t capacity, bool reserve = true) noexcept
+  LruStorage(std::size_t capacity, bool reserve = true)
       : capacity_{capacity} {
     assert(capacity_ > 0);
     if (reserve) {
@@ -74,7 +74,7 @@ private:
 
   using List    = std::list<Node>;
   using LIt     = typename List::iterator;
-  using HashMap = std::unordered_map<key_proj_type, LIt>;
+  using HashMap = std::unordered_map<key_proj_type, LIt>;// unordered_set c++20 heterogeneous comparator
 
 private:
   void move_to_front(typename HashMap::const_iterator it) noexcept {

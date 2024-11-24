@@ -12,6 +12,7 @@
 namespace nut::aux {
 
 
+template<DnsCacheImplType type>
 class DnsCacheFixture : public MultiThreadedRWFixture {
 public:
   template<typename... Args>
