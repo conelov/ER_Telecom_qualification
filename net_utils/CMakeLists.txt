@@ -7,6 +7,7 @@ add_library(${name}
   utils.hpp
   Singleton.hpp
   RcuStorage.hpp
+  LruStorage.hpp
   SpinlockRW.hpp
   DnsCache.hpp
   DnsCacheImpl.hpp src/DnsCacheImpl.cpp

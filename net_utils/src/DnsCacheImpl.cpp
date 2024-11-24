@@ -47,7 +47,7 @@ DnsCacheImplRcu<Mx_>::DnsCacheImplRcu()
 
 
 template<typename Mx_>
-void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip_in) {
+void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip_in) const {
   map_.modify([this, &name, &ip_in](auto ptr) {
     assert(ptr);
     auto& [ip, time] = (*ptr)[name];
@@ -99,12 +99,37 @@ void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
   }
 }
 
-
 template<>
 class DnsCacheImplRcu<std::mutex>;
 
 template<>
 class DnsCacheImplRcu<SpinlockRW<>>;
+
+
+template<typename Mx_>
+DnsCacheImplLRU<Mx_>::~DnsCacheImplLRU() = default;
+
+
+template<typename Mx_>
+DnsCacheImplLRU<Mx_>::DnsCacheImplLRU() = default;
+
+
+template<typename Mx_>
+void DnsCacheImplLRU<Mx_>::update(const std::string& name, const std::string& ip) const {
+
+}
+
+
+template<typename Mx_>
+std::string DnsCacheImplLRU<Mx_>::resolve(const std::string& name) {
+  auto const it = map_.find(name);
+  if (it == map_.end()) {
+    return {};
+  }
+
+  list_.splice(list_.cbegin(), list_, it->second);
+  return it->second->second;
+}
 
 
 }// namespace aux

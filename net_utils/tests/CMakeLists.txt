@@ -137,14 +137,6 @@ function(test_common out_var suffix)
 endfunction()
 
 
-test_common(tests RcuStorage)
-foreach(i IN LISTS tests)
-  target_sources(${i} PRIVATE
-    RcuStorage.cpp
-  )
-endforeach()
-
-
 test_common(tests DnsCache)
 foreach(i IN LISTS tests)
   target_sources(${i} PRIVATE
@@ -156,9 +148,15 @@ foreach(i IN LISTS tests)
 endforeach()
 
 
-test_common(tests SpinlockRW)
-foreach(i IN LISTS tests)
-  target_sources(${i} PRIVATE
-    SpinlockRW.cpp
-  )
+macro(test_once name)
+  test_common(tests ${name})
+  foreach(i IN LISTS tests)
+    target_sources(${i} PRIVATE
+      ${name}.cpp
+    )
+  endforeach()
+endmacro()
+
+foreach(i LruStorage RcuStorage SpinlockRW)
+  test_once(${i})
 endforeach()

@@ -24,8 +24,8 @@ public:
   explicit DnsCacheImplRcu(std::size_t cache_size);
   DnsCacheImplRcu();
 
-  void                      update(const std::string& name, const std::string& ip) const;
-  [[nodiscard]] std::string resolve(const std::string& name);
+  void                      update(const std::string& name, const std::string& ip);
+  [[nodiscard]] std::string resolve(const std::string& name) const;
 
 private:
   using Clock = std::chrono::steady_clock;
@@ -55,13 +55,10 @@ template<typename Mx_>
 class DnsCacheImplLRU {
 public:
   ~DnsCacheImplLRU();
-
-  DnsCacheImplLRU(std::size_t cache_size, std::size_t cache_cap);
-  explicit DnsCacheImplLRU(std::size_t cache_size);
   DnsCacheImplLRU();
 
-  void                      update(const std::string& name, const std::string& ip) const;
-  [[nodiscard]] std::string resolve(const std::string& name);
+  void                      update(const std::string& name, const std::string& ip);
+  [[nodiscard]] std::string resolve(const std::string& name) const;
 
 private:
   using List    = std::list<std::pair<std::string, std::string>>;
