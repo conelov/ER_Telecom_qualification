@@ -11,9 +11,13 @@ function(bench_common out_var suffix)
     OPTIONS "BENCHMARK_ENABLE_TESTING OFF"
   )
 
-  set(name ${PROJECT_NAME}-bench${suffix})
+  set(name ${PROJECT_NAME}-bench-${suffix})
   add_executable(${name})
   target_common(${name})
+
+  target_sources(${name} PRIVATE
+    common.hpp
+  )
 
   target_link_libraries(${name} PRIVATE
     benchmark::benchmark
@@ -31,21 +35,18 @@ function(bench_common out_var suffix)
 endfunction()
 
 
-bench_common(name SharedMX_std)
-target_sources(${name} PRIVATE
-  common.hpp
-  SharedMX_std.cpp
-)
+foreach(name_bench SharedMX RcuStorage)
+  foreach(type stdMX SpinlockRW)
+    bench_common(name ${name_bench}_${type})
+    target_sources(${name} PRIVATE
+      ${name_bench}_${type}.cpp
+    )
+  endforeach()
+endforeach()
 
-bench_common(name SharedMX_SpinlockRW)
-target_sources(${name} PRIVATE
-  common.hpp
-  SharedMX_SpinlockRW.cpp
-)
 
 bench_common(name DnsCacheImpl)
 target_sources(${name} PRIVATE
-  common.hpp
   DnsCacheImpl.cpp
 )
 target_link_libraries(${name} PRIVATE

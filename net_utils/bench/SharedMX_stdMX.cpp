@@ -1,5 +1,3 @@
-#include <benchmark/benchmark.h>
-
 #include <net_utils/bench/common.hpp>
 
 

@@ -4,4 +4,4 @@
 using namespace nut;
 
 
-SHARED_MX_BENCH(SpinlockRW, SpinlockRW<std::uint16_t>)
+RCU_BENCH(SpinlockRW, SpinlockRW<std::uint16_t>)

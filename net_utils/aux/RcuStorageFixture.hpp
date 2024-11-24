@@ -61,7 +61,7 @@ public:
   }
 
 private:
-  std::optional<Storage>   v_;
+  std::optional<Storage> v_;
 };
 
 
