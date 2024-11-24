@@ -12,10 +12,10 @@ namespace {
 template<typename P_>
 class SpinlockRWTest
     : public ::testing::Test
-    , public aux::SpinlockRWFixture<std::tuple_element_t<0, P_>, std::tuple_element_t<1, P_>::value> {
+    , public aux::SpinlockRWFixture<P_> {
 protected:
-  static auto constexpr r_iters = 10'000;
-  static auto constexpr w_iters = 1'000;
+  static auto constexpr r_iters = 100'000;
+  static auto constexpr w_iters = 10'000;
 
 protected:
   void SetUp() override {
@@ -32,15 +32,11 @@ protected:
 };
 
 
-using Storage = ::testing::Types<
-  std::tuple<std::shared_mutex, std::false_type>,
-  std::tuple<std::shared_mutex, std::true_type>,
-  std::tuple<SpinlockRW, std::false_type>,
-  std::tuple<SpinlockRW, std::true_type>>;
+using Storage = ::testing::Types<std::shared_mutex, SpinlockRW<>>;
 TYPED_TEST_SUITE(SpinlockRWTest, Storage);
 
 
-TYPED_TEST(SpinlockRWTest, general) {
+TYPED_TEST(SpinlockRWTest, smoke) {
   this->start();
   this->down();
   ASSERT_EQ(this->data, 0);

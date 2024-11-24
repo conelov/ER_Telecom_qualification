@@ -11,27 +11,29 @@ namespace nut {
 
 
 /// Read-write spinlock with priority for writers
+template<typename Count_ = std::uint16_t>
 class SpinlockRW final {
 public:
   ~SpinlockRW() {
 #ifndef NDEBUG
-    auto const [r, w, l] = count_.load(std::memory_order_seq_cst);
+    auto const [r, w, l] = v_.load();
     assert(r == 0);
     assert(w == 0);
-    assert(l == 0);
+    assert(!l);
 #endif
   }
 
 
   void lock_shared() noexcept {
-    auto curr = count_.load(std::memory_order_acquire);
+    // expect no writer
     do {
-      // expect no writers
-      curr.writers = 0;
-      curr.w_lock  = false;
-      if (count_.compare_exchange_strong(
-            curr,
-            {.readers = static_cast<StateCounter>(curr.readers + 1), .writers = 0, .w_lock = false},
+      auto exp = v_.load(std::memory_order_acquire);
+      assert(exp.readers < std::numeric_limits<StateCounter>::max());
+      exp.writers = 0;
+      exp.w_lock  = false;
+      if (v_.compare_exchange_weak(
+            exp,
+            {static_cast<StateCounter>(exp.readers + 1), 0, false},
             std::memory_order_acq_rel,
             std::memory_order_acquire)) {
         break;
@@ -42,13 +44,13 @@ public:
 
 
   void unlock_shared() noexcept {
-    auto curr = count_.load(std::memory_order_acquire);
     do {
-      assert(curr.readers > 0);
-      assert(curr.w_lock == false);
-      if (count_.compare_exchange_strong(
-            curr,
-            {.readers = static_cast<StateCounter>(curr.readers - 1), .writers = curr.writers, .w_lock = false},
+      auto exp = v_.load(std::memory_order_acquire);
+      assert(exp.readers > 0);
+      assert(!exp.w_lock);
+      if (v_.compare_exchange_weak(
+            exp,
+            {static_cast<StateCounter>(exp.readers - 1), exp.writers, false},
             std::memory_order_acq_rel,
             std::memory_order_acquire)) {
         break;
@@ -59,73 +61,56 @@ public:
 
 
   void lock() noexcept {
-    lock_exclusive(false);
-  }
-
-
-  bool try_lock() noexcept {
-    return lock_exclusive(true);
-  }
-
-
-  void unlock() noexcept {
-    auto curr = count_.load(std::memory_order_acquire);
+    auto exp = v_.load(std::memory_order_acquire);
     do {
-      assert(curr.readers == 0);
-      assert(curr.writers > 0);
-      assert(curr.w_lock);
-      if (count_.compare_exchange_strong(
-            curr,
-            {.readers = 0, .writers = static_cast<StateCounter>(curr.writers - 1), .w_lock = false},
-            std::memory_order_acq_rel,
-            std::memory_order_acquire)) {
+      assert(exp.writers < std::numeric_limits<StateCounter>::max() / 2);
+      if (State const desired = {exp.readers, static_cast<StateCounter>(exp.writers + 1), exp.w_lock};
+        v_.compare_exchange_weak(
+          exp,
+          desired,
+          std::memory_order_acq_rel,
+          std::memory_order_acquire)) {
+        exp = desired;
         break;
       }
-      thread_pause();
-    } while (true);
-  }
-
-private:
-  bool lock_exclusive(bool const try_to_lock) noexcept {
-    auto curr = count_.load(std::memory_order_acquire);
-    do {
-      if (try_to_lock && curr.w_lock) {
-        return false;
-      }
-
-      if (State const desired{.readers = curr.readers, .writers = static_cast<StateCounter>(curr.writers + 1), .w_lock = curr.w_lock};
-        count_.compare_exchange_strong(curr, desired, std::memory_order_acq_rel, std::memory_order_acquire)) {
-        curr = desired;
-        break;
-      }
-
       thread_pause();
     } while (true);
 
     // wait readers and exclusive write
     do {
-      curr.readers = 0;
-      curr.w_lock  = false;
-      if (count_.compare_exchange_weak(
-            curr,
-            {.readers = 0, .writers = curr.writers, .w_lock = true},
+      exp.readers = 0;
+      exp.w_lock  = false;
+      if (v_.compare_exchange_weak(
+            exp,
+            {0, exp.writers, true},
             std::memory_order_acq_rel,
             std::memory_order_acquire)) {
         break;
       }
-
       thread_pause();
-      curr = count_.load(std::memory_order_acquire);
-      if (try_to_lock && curr.readers == 0 && curr.w_lock) {
-        return false;
-      }
     } while (true);
+  }
 
-    return true;
+
+  void unlock() noexcept {
+    auto curr = v_.load(std::memory_order_acquire);
+    do {
+      assert(curr.readers == 0);
+      assert(curr.writers > 0);
+      assert(curr.w_lock == true);
+      if (v_.compare_exchange_strong(
+            curr,
+            {0, static_cast<StateCounter>(curr.writers - 1), false},
+            std::memory_order_acq_rel,
+            std::memory_order_acquire)) {
+        break;
+      }
+      thread_pause();
+    } while (true);
   }
 
 private:
-  using StateCounter = std::uint16_t;
+  using StateCounter = Count_;
 
   struct State final {
     StateCounter readers : sizeof(StateCounter) * 8;
@@ -134,9 +119,9 @@ private:
   };
 
 private:
-  std::atomic<State> count_ = State{.readers = 0, .writers = 0};
+  std::atomic<State> v_ = State{.readers = 0, .writers = 0};
 
-  static_assert(decltype(count_)::is_always_lock_free);
+  static_assert(decltype(v_)::is_always_lock_free);
 };
 
 
