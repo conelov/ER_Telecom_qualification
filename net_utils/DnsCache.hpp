@@ -19,13 +19,12 @@ public:
   }
 
 private:
-  template<typename... Args>
-  explicit DnsCache(Args&&... args)
-      : p_{std::forward<Args>(args)...} {
+  DnsCache(std::size_t capacity)
+      : p_{capacity} {
   }
 
 private:
-  DnsCacheImpl p_{};
+  aux::DnsCacheImplLRU p_;
 
   friend Singleton;
 };

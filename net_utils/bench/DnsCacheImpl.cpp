@@ -5,6 +5,8 @@
 
 #include <net_utils/aux/DnsCacheFixture.hpp>
 
+#include <net_utils/bench/common.hpp>
+
 
 using namespace nut;
 
@@ -17,7 +19,7 @@ std::size_t constexpr rw_rel_mutli = 100'000;
 
 class DnsCacheBench
     : public benchmark::Fixture
-    , public DnsCacheFixture {
+    , public aux::DnsCacheFixture {
 public:
   void SetUp(benchmark::State& state) override {
     std::size_t const cache_size = state.range(0);

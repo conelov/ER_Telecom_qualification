@@ -6,9 +6,7 @@ set(name ER_Telecom_net_utils)
 add_library(${name}
   utils.hpp
   Singleton.hpp
-  RcuStorage.hpp
   LruStorage.hpp
-  SpinlockRW.hpp
   DnsCache.hpp
   DnsCacheImpl.hpp src/DnsCacheImpl.cpp
 )

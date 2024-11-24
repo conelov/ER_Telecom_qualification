@@ -35,16 +35,6 @@ function(bench_common out_var suffix)
 endfunction()
 
 
-foreach(name_bench SharedMX RcuStorage)
-  foreach(type stdMX SpinlockRW)
-    bench_common(name ${name_bench}_${type})
-    target_sources(${name} PRIVATE
-      ${name_bench}_${type}.cpp
-    )
-  endforeach()
-endforeach()
-
-
 bench_common(name DnsCacheImpl)
 target_sources(${name} PRIVATE
   DnsCacheImpl.cpp

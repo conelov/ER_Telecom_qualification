@@ -10,7 +10,6 @@
 namespace nut::aux {
 
 
-template<DnsCacheImplType type>
 class DnsCacheFixture : public MultiThreadedRWFixture {
 public:
   template<typename... Args>
@@ -45,7 +44,7 @@ public:
   }
 
 private:
-  std::optional<DnsCacheImpl<type>> cache_;
+  std::optional<DnsCacheImplLRU> cache_;
 };
 
 

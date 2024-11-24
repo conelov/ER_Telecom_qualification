@@ -157,6 +157,4 @@ macro(test_once name)
   endforeach()
 endmacro()
 
-foreach(i LruStorage RcuStorage SpinlockRW)
-  test_once(${i})
-endforeach()
+test_once(LruStorage)
