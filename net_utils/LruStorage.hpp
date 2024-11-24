@@ -20,9 +20,7 @@ public:
   LruStorage(std::size_t capacity, bool reserve = true)
       : capacity_{capacity} {
     assert(capacity_ > 0);
-    if (reserve) {
-      map_.reserve(capacity);
-    }
+    reset(capacity_, reserve);
   }
 
 
@@ -52,18 +50,35 @@ public:
   template<typename Key, typename... VArgs>
   value_type& put(Key&& key, VArgs&&... v_args) {
     if (auto const it = map_.find(key); it != map_.cend()) {
+      assert(it->second != list_.cend());
       it->second->value = value_type{std::forward<VArgs>(v_args)...};
       move_to_front(it);
       return it->second->value;
     }
 
-    assert(size() <= capacity_);
     if (size() == capacity_) {
       map_.erase(list_.back().key);
       list_.pop_back();
     }
-    list_.emplace_front(Node{key, {std::forward<VArgs>(v_args)...}});
-    return map_.emplace(list_.front().key, list_.begin()).first->second->value;
+    list_.emplace_front(Node{std::forward<Key>(key), {std::forward<VArgs>(v_args)...}});
+    auto const [it, f] = map_.emplace(list_.front().key, list_.begin());
+    assert(f);
+    return it->second->value;
+  }
+
+
+  void clear() noexcept {
+    reset(capacity_);
+  }
+
+
+  void reset(std::size_t capacity, bool reserve = true) noexcept {
+    list_.clear();
+    map_.clear();
+    capacity_ = capacity;
+    if (reserve) {
+      map_.reserve(capacity);
+    }
   }
 
 private:
@@ -73,8 +88,7 @@ private:
   };
 
   using List    = std::list<Node>;
-  using LIt     = typename List::iterator;
-  using HashMap = std::unordered_map<key_proj_type, LIt>;// unordered_set c++20 heterogeneous comparator
+  using HashMap = std::unordered_map<key_proj_type, typename List::iterator>;// unordered_set c++20 heterogeneous comparator
 
 private:
   void move_to_front(typename HashMap::const_iterator it) noexcept {
@@ -82,9 +96,9 @@ private:
   }
 
 private:
-  List              list_;
-  HashMap           map_;
-  std::size_t const capacity_;
+  List        list_;
+  HashMap     map_;
+  std::size_t capacity_;
 }
 
 ;

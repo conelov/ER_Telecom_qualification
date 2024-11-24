@@ -40,8 +40,8 @@ public:
 
 
   void down() override {
-    MultiThreadedFixture::down();
-    // cache_.reset();
+    MultiThreadedRWFixture::down();
+    cache_.reset();
   }
 
 private:

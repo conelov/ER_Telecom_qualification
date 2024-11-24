@@ -25,7 +25,7 @@ class DnsCacheTest<std::integral_constant<DnsCacheImplType, type>>
     : public ::testing::Test
     , public aux::DnsCacheFixture<type> {
 protected:
-  static auto constexpr r_iters              = 100'000;
+  static auto constexpr r_iters              = 1'000'000;
   static auto constexpr w_iters              = 10'000;
   static auto constexpr w_exclusive_relation = 5. / 10;
   static_assert(w_exclusive_relation >= 0);
@@ -54,7 +54,7 @@ protected:
 using Storage = ::testing::Types<
   // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_std_mx>,
   // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_spinlock_rw>,
-  // std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>,
+  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>,
   std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_spinlock_rw>
   >;
 TYPED_TEST_SUITE(DnsCacheTest, Storage);

@@ -60,11 +60,12 @@ public:
     auto exp = v_.load(std::memory_order_acquire);
     do {
       exp.w_lock = false;
-      if (State const desired = {exp.readers, true}; v_.compare_exchange_weak(
-            exp,
-            desired,
-            std::memory_order_acq_rel,
-            std::memory_order_acquire)) {
+      if (State const desired = {exp.readers, true};
+        v_.compare_exchange_weak(
+          exp,
+          desired,
+          std::memory_order_acq_rel,
+          std::memory_order_acquire)) {
         exp = desired;
         break;
       }

@@ -45,9 +45,9 @@ constexpr auto carry(Fn&& fn, Args&&... args) noexcept {
 }
 
 
+}// namespace nut
+
+
 // https://stackoverflow.com/questions/58424276/why-can-mm-pause-significantly-improve-performance#comment103190748_58424276
 // TODO: possible non cross-platform
 #define thread_pause() asm volatile("pause")
-
-
-}// namespace nut

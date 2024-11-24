@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <shared_mutex>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <unordered_map>
 
@@ -60,7 +62,7 @@ public:
   [[nodiscard]] std::string resolve(const std::string& name) const;
 
 private:
-  LruStorage<std::string, std::string> mutable st_;
+  LruStorage<std::string, std::string, std::string_view> mutable st_;
   Mx_ mutable mx_;
 };
 
