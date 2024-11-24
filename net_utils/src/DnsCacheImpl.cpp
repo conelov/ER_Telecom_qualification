@@ -1,26 +1,29 @@
 #include <cassert>
 #include <cmath>
+#include <mutex>
 #include <queue>
 
 #include <net_utils/DnsCacheImpl.hpp>
+#include <net_utils/SpinlockRW.hpp>
 
 
 namespace nut {
+namespace aux {
 namespace {
-namespace _ {
 
 
 constexpr auto kCacheCap = 9. / 10;
 
 
-}// namespace _
 }// namespace
 
 
-DnsCacheImpl::~DnsCacheImpl() = default;
+template<typename Mx_>
+DnsCacheImplRcu<Mx_>::~DnsCacheImplRcu() = default;
 
 
-DnsCacheImpl::DnsCacheImpl(std::size_t cache_size, std::size_t cache_cap)
+template<typename Mx_>
+DnsCacheImplRcu<Mx_>::DnsCacheImplRcu(std::size_t cache_size, std::size_t cache_cap)
     : map_{std::make_shared<HashMap>()}
     , cache_size_{cache_size}
     , cache_cap_{cache_cap} {
@@ -28,20 +31,23 @@ DnsCacheImpl::DnsCacheImpl(std::size_t cache_size, std::size_t cache_cap)
 }
 
 
-DnsCacheImpl::DnsCacheImpl(std::size_t cache_size)
-    : DnsCacheImpl{
+template<typename Mx_>
+DnsCacheImplRcu<Mx_>::DnsCacheImplRcu(std::size_t cache_size)
+    : DnsCacheImplRcu{
         cache_size,
-        cache_size + static_cast<std::size_t>(std::ceil(std::pow(cache_size, _::kCacheCap)))// heuristic predict cap
+        cache_size + static_cast<std::size_t>(std::ceil(std::pow(cache_size, kCacheCap)))// heuristic predict cap
       } {
 }
 
 
-DnsCacheImpl::DnsCacheImpl()
-    : DnsCacheImpl{DNS_CACHE_REC_LIMIT} {
+template<typename Mx_>
+DnsCacheImplRcu<Mx_>::DnsCacheImplRcu()
+    : DnsCacheImplRcu{DNS_CACHE_REC_LIMIT} {
 }
 
 
-void DnsCacheImpl::update(const std::string& name, const std::string& ip_in) {
+template<typename Mx_>
+void DnsCacheImplRcu<Mx_>::update(const std::string& name, const std::string& ip_in) {
   map_.modify([this, &name, &ip_in](auto ptr) {
     assert(ptr);
     auto& [ip, time] = (*ptr)[name];
@@ -53,7 +59,8 @@ void DnsCacheImpl::update(const std::string& name, const std::string& ip_in) {
 }
 
 
-std::string DnsCacheImpl::resolve(const std::string& name) {
+template<typename Mx_>
+std::string DnsCacheImplRcu<Mx_>::resolve(const std::string& name) {
   if (auto const lock = *map_) {
     if (auto const it = lock->find(name); it != lock->cend()) {
       return it->second.ip;
@@ -63,13 +70,14 @@ std::string DnsCacheImpl::resolve(const std::string& name) {
 }
 
 
-void DnsCacheImpl::cleanup_if_needed(HashMap& map) const {
+template<typename Mx_>
+void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
   if (map.size() <= cache_cap_) {
     return;
   }
 
   // O(size * log(size - cap))
-  using It                  = HashMap::const_iterator;
+  using It                  = typename HashMap::const_iterator;
   auto constexpr queue_comp = [](It lhs, It rhs) noexcept {
     return lhs->second.timestamp < rhs->second.timestamp;
   };
@@ -90,6 +98,16 @@ void DnsCacheImpl::cleanup_if_needed(HashMap& map) const {
     queue.pop();
   }
 }
+
+
+template<>
+class DnsCacheImplRcu<std::mutex>;
+
+template<>
+class DnsCacheImplRcu<SpinlockRW<>>;
+
+
+}// namespace aux
 
 
 }// namespace nut
