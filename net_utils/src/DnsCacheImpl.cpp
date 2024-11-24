@@ -99,7 +99,7 @@ void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
 }
 
 template class DnsCacheImplRcu<std::shared_mutex>;
-template class DnsCacheImplRcu<SpinlockRW<>>;
+// template class DnsCacheImplRcu<SpinlockRW<>>;
 
 
 template<typename Mx_>
@@ -134,7 +134,7 @@ std::string DnsCacheImplLRU<Mx_>::resolve(const std::string& name) const {
 }
 
 template class DnsCacheImplLRU<std::shared_mutex>;
-template class DnsCacheImplLRU<SpinlockRW<>>;
+// template class DnsCacheImplLRU<SpinlockRW<>>;
 
 
 }// namespace nut::aux

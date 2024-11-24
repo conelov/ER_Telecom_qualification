@@ -52,10 +52,10 @@ protected:
 
 
 using Storage = ::testing::Types<
-  // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_std_mx>,
+  std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_std_mx>,
   // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_spinlock_rw>,
-  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>,
-  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_spinlock_rw>
+  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>
+  // std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_spinlock_rw>
   >;
 TYPED_TEST_SUITE(DnsCacheTest, Storage);
 

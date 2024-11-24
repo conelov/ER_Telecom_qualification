@@ -49,7 +49,7 @@ private:
 };
 
 extern template class DnsCacheImplRcu<std::shared_mutex>;
-extern template class DnsCacheImplRcu<SpinlockRW<>>;
+// extern template class DnsCacheImplRcu<SpinlockRW<>>;
 
 
 template<typename Mx_>
@@ -68,7 +68,7 @@ private:
 
 
 extern template class DnsCacheImplLRU<std::shared_mutex>;
-extern template class DnsCacheImplLRU<SpinlockRW<>>;
+// extern template class DnsCacheImplLRU<SpinlockRW<>>;
 
 
 }// namespace aux
@@ -87,15 +87,17 @@ using DnsCacheImpl =
   std::conditional_t<type == DnsCacheImplType::rcu_std_mx,
     aux::DnsCacheImplRcu<std::shared_mutex>,
     //
-    std::conditional_t<type == DnsCacheImplType::rcu_spinlock_rw,
-      aux::DnsCacheImplRcu<SpinlockRW<>>,
-      //
-      std::conditional_t<type == DnsCacheImplType::lru_std_mx,
-        aux::DnsCacheImplLRU<std::shared_mutex>,
-        // type == DnsCacheImplType::lru_spinlock_rw
-        aux::DnsCacheImplLRU<SpinlockRW<>>
-        //
-        >>>;
+    // std::conditional_t<type == DnsCacheImplType::rcu_spinlock_rw,
+    // aux::DnsCacheImplRcu<SpinlockRW<>>,
+    //
+    // std::conditional_t<type == DnsCacheImplType::lru_std_mx,
+    aux::DnsCacheImplLRU<std::shared_mutex>
+    // type == DnsCacheImplType::lru_spinlock_rw
+    // aux::DnsCacheImplLRU<SpinlockRW<>>
+    //
+    // >
+    // >
+    >;
 
 
 }// namespace nut
