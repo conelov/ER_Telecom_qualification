@@ -35,5 +35,5 @@ void generate_dependent_args(benchmark::internal::Benchmark* b) {
 }// namespace
 
 
-BENCH_T(RcuStorageBench, std_mx, std::shared_mutex);
 BENCH_T(RcuStorageBench, priority_mutex, PriorityMutex<>);
+BENCH_T(RcuStorageBench, std_mx, std::mutex);

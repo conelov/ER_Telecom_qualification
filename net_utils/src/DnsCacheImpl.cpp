@@ -23,7 +23,7 @@ DnsCacheImplRcu<Mx_>::~DnsCacheImplRcu() = default;
 
 template<typename Mx_>
 DnsCacheImplRcu<Mx_>::DnsCacheImplRcu(std::size_t cache_size, std::size_t cache_cap)
-    : st_{std::make_shared<HashMap>()}
+    : st_{}
     , cache_size_{cache_size}
     , cache_cap_{cache_cap} {
   assert(cache_cap_ >= cache_size_);

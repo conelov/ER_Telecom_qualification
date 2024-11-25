@@ -18,8 +18,9 @@ public:
   using ReadPtr  = std::shared_ptr<typename Lru::value_type const>;
 
 public:
-  RcuLruStorage(std::size_t cache_size)
-      : RcuUnder{std::make_shared<Lru>(cache_size)} {
+  template<typename ... Args>
+  RcuLruStorage(Args&& ...args)
+      : RcuUnder{std::forward<Args>(args)...} {
   }
 
 
