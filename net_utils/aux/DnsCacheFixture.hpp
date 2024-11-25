@@ -11,6 +11,10 @@ namespace nut::aux {
 
 
 template<DnsCacheImplType type>
+using DnsCacheImplTypeC = std::integral_constant<DnsCacheImplType, type>;
+
+
+template<DnsCacheImplType type>
 class DnsCacheFixture : public MultiThreadedRWValuedFixture<DnsCacheImpl<type>> {
 public:
   void bind(std::size_t cache_size) {

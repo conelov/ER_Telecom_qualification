@@ -1,0 +1,121 @@
+2024-11-25T06:58:14+03:00
+Running /home/dym/CLionProjects/ER-Telecom_qualification/cmake-build-release/net_utils/bench/ER_Telecom_qualif-bench-DnsCacheImpl
+Run on (24 X 5159.77 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x12)
+  L1 Instruction 32 KiB (x12)
+  L2 Unified 512 KiB (x12)
+  L3 Unified 32768 KiB (x2)
+Load Average: 10.29, 8.04, 6.48
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                                                                                   Time             CPU   Iterations      cache       r_it         rs       w_it         ws
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100/100             201 ns          201 ns      3494679         1k        100          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/50000/100           191 ns          189 ns      3833196         1k        50k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100000/100          188 ns          185 ns      3674976         1k       100k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100/500             190 ns          189 ns      3736992         1k        100          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/50000/500           195 ns          190 ns      3707690         1k        50k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100000/500          197 ns          191 ns      3719295         1k       100k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100/1000            193 ns          190 ns      3738121         1k        100          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/50000/1000          200 ns          192 ns      3828577         1k        50k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/10000/100000/1000         196 ns          188 ns      3730351         1k       100k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100/100             189 ns          189 ns      3662324         1k        100         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/50000/100           237 ns          190 ns      3748738         1k        50k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100000/100          269 ns          190 ns      3768531         1k       100k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100/500             193 ns          192 ns      3715267         1k        100         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/50000/500           239 ns          190 ns      3441896         1k        50k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100000/500          266 ns          190 ns      3909950         1k       100k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100/1000            193 ns          191 ns      3635917         1k        100         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/50000/1000          230 ns          181 ns      3497990         1k        50k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/50000/100000/1000         281 ns          191 ns      3736936         1k       100k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100/100             190 ns          190 ns      3719886         1k        100         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/50000/100           375 ns          190 ns      3732353         1k        50k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100000/100          574 ns          190 ns      3627174         1k       100k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100/500             192 ns          191 ns      3677281         1k        100         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/50000/500           401 ns          194 ns      3551348         1k        50k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100000/500          565 ns          192 ns      3907757         1k       100k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100/1000            194 ns          193 ns      3647526         1k        100         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/50000/1000          380 ns          190 ns      3729770         1k        50k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/1000/90000/100000/1000         554 ns          181 ns      3718213         1k       100k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100/100           1328 ns         1324 ns       555198        10k        100          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/50000/100         1306 ns         1292 ns       560638        10k        50k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100000/100        1327 ns         1305 ns       546003        10k       100k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100/500           1320 ns         1304 ns       546509        10k        100          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/50000/500         1317 ns         1289 ns       547297        10k        50k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100000/500        1333 ns         1293 ns       545179        10k       100k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100/1000          1341 ns         1317 ns       543149        10k        100          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/50000/1000        1355 ns         1312 ns       542999        10k        50k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/10000/100000/1000       1364 ns         1306 ns       542750        10k       100k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100/100           1305 ns         1303 ns       534528        10k        100         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/50000/100         1589 ns         1306 ns       545692        10k        50k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100000/100        2032 ns         1301 ns       485541        10k       100k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100/500           1325 ns         1317 ns       546801        10k        100         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/50000/500         1590 ns         1279 ns       545810        10k        50k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100000/500        1922 ns         1304 ns       548854        10k       100k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100/1000          1329 ns         1318 ns       541952        10k        100         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/50000/1000        1578 ns         1284 ns       560712        10k        50k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/50000/100000/1000       1997 ns         1301 ns       547527        10k       100k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100/100           1317 ns         1300 ns       541925        10k        100         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/50000/100         2544 ns         1268 ns       565535        10k        50k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100000/100        3765 ns         1292 ns       569255        10k       100k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100/500           1304 ns         1286 ns       547611        10k        100         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/50000/500         2394 ns         1301 ns       570057        10k        50k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100000/500        3987 ns         1295 ns       546313        10k       100k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100/1000          1317 ns         1313 ns       541587        10k        100         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/50000/1000        2647 ns         1296 ns       544716        10k        50k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>/priority_mutex/10000/90000/100000/1000       3903 ns         1307 ns       544048        10k       100k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100/100                             191 ns          191 ns      3537587         1k        100          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/50000/100                           196 ns          191 ns      3748263         1k        50k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100000/100                          192 ns          182 ns      3615755         1k       100k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100/500                             191 ns          189 ns      3769436         1k        100          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/50000/500                           188 ns          183 ns      3802795         1k        50k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100000/500                          200 ns          189 ns      3755361         1k       100k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100/1000                            186 ns          182 ns      3919713         1k        100          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/50000/1000                          198 ns          191 ns      3744669         1k        50k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/10000/100000/1000                         206 ns          191 ns      3751490         1k       100k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100/100                             190 ns          190 ns      3727802         1k        100         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/50000/100                           236 ns          188 ns      3417208         1k        50k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100000/100                          271 ns          188 ns      3735004         1k       100k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100/500                             191 ns          190 ns      3741399         1k        100         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/50000/500                           237 ns          185 ns      3330924         1k        50k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100000/500                          286 ns          186 ns      3493220         1k       100k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100/1000                            190 ns          187 ns      3840748         1k        100         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/50000/1000                          239 ns          188 ns      3775692         1k        50k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/50000/100000/1000                         279 ns          186 ns      3891768         1k       100k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100/100                             183 ns          182 ns      3802454         1k        100         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/50000/100                           263 ns          191 ns      3728299         1k        50k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100000/100                          336 ns          190 ns      3720322         1k       100k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100/500                             191 ns          190 ns      3723855         1k        100         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/50000/500                           265 ns          188 ns      3869099         1k        50k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100000/500                          332 ns          182 ns      3900742         1k       100k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100/1000                            183 ns          182 ns      3645698         1k        100         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/50000/1000                          266 ns          184 ns      3855237         1k        50k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/1000/90000/100000/1000                         346 ns          185 ns      3881628         1k       100k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100/100                           1288 ns         1286 ns       564205        10k        100          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/50000/100                         1326 ns         1292 ns       554151        10k        50k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100000/100                        1400 ns         1332 ns       542262        10k       100k          2        100         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100/500                           1340 ns         1328 ns       542067        10k        100          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/50000/500                         1380 ns         1326 ns       540792        10k        50k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100000/500                        1386 ns         1318 ns       531404        10k       100k          2        500         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100/1000                          1355 ns         1331 ns       541484        10k        100          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/50000/1000                        1383 ns         1327 ns       539763        10k        50k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/10000/100000/1000                       1406 ns         1325 ns       541668        10k       100k          2         1k         22
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100/100                           1339 ns         1336 ns       539588        10k        100         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/50000/100                         1534 ns         1327 ns       477120        10k        50k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100000/100                        1692 ns         1256 ns       558317        10k       100k         12        100         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100/500                           1301 ns         1292 ns       560020        10k        100         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/50000/500                         1555 ns         1275 ns       557891        10k        50k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100000/500                        1885 ns         1278 ns       555046        10k       100k         12        500         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100/1000                          1326 ns         1314 ns       550125        10k        100         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/50000/1000                        1548 ns         1256 ns       558173        10k        50k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/50000/100000/1000                       1893 ns         1290 ns       551751        10k       100k         12         1k         12
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100/100                           1279 ns         1277 ns       559342        10k        100         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/50000/100                         1805 ns         1288 ns       551516        10k        50k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100000/100                        2244 ns         1282 ns       563242        10k       100k         22        100          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100/500                           1283 ns         1280 ns       552929        10k        100         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/50000/500                         1851 ns         1323 ns       532656        10k        50k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100000/500                        2373 ns         1317 ns       534019        10k       100k         22        500          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100/1000                          1322 ns         1320 ns       536642        10k        100         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/50000/1000                        1841 ns         1282 ns       527288        10k        50k         22         1k          2
+DnsCacheBench<aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>>/std_mx/10000/90000/100000/1000                       2312 ns         1295 ns       551361        10k       100k         22         1k          2

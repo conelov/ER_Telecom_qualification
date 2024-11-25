@@ -22,7 +22,7 @@ class DnsCacheTest;
 
 
 template<DnsCacheImplType type>
-class DnsCacheTest<std::integral_constant<DnsCacheImplType, type>>
+class DnsCacheTest<aux::DnsCacheImplTypeC<type>>
     : public ::testing::Test
     , public aux::DnsCacheFixture<type> {
 protected:
@@ -40,8 +40,8 @@ protected:
 using Storage = ::testing::Types<
   // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_std_mx>,
   // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_spinlock_rw>,
-  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>,
-  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_priority_mutex>>;
+  aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>,
+  aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>>;
 TYPED_TEST_SUITE(DnsCacheTest, Storage);
 
 

@@ -40,11 +40,11 @@ public:
     state.counters["ws"] = this->writers;
 
     this->read_iters         = state.range(r_idx);
-    state.counters["r_rate"] = benchmark::Counter(this->read_iters / this->readers, benchmark::Counter::kIsRate);
+    // state.counters["r_rate"] = benchmark::Counter(this->read_iters / this->readers, benchmark::Counter::kIsRate);
     state.counters["r_it"]   = this->read_iters;
 
     this->write_iters        = state.range(w_idx);
-    state.counters["w_rate"] = benchmark::Counter(this->write_iters / this->writers, benchmark::Counter::kIsRate);
+    // state.counters["w_rate"] = benchmark::Counter(this->write_iters / this->writers, benchmark::Counter::kIsRate);
     state.counters["w_it"]   = this->write_iters;
   }
 };
