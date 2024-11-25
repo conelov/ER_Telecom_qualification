@@ -1,6 +1,3 @@
-set(DNS_CACHE_REC_LIMIT 10 CACHE STRING "")
-
-
 set(name ER_Telecom_net_utils)
 
 add_library(${name}

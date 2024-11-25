@@ -10,6 +10,7 @@ set(TESTS_SANITIZE "address;thread;ub;leak;mem" CACHE STRING "")
 option(BUILD_GBENCH "Enable benchmark" ${PROJECT_IS_TOP_LEVEL})
 set(GBENCH_VERSION 1.9.0 CACHE STRING "")
 option(GBENCH_SAN "Use sanitizers for benchmarking" OFF)
+set(DNS_CACHE_REC_LIMIT 1000 CACHE STRING "")
 
 
 if(BUILD_TESTING AND NOT "${TESTS_SANITIZE}" STREQUAL "")

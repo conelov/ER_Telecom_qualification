@@ -12,6 +12,7 @@
   BENCHMARK_REGISTER_F(fixture, name)                                          \
     ->Apply(generate_dependent_args)
 
+
 #define BENCH(fixture, name)                                    \
   BENCHMARK_DEFINE_F(fixture, name)(benchmark::State & state) { \
     for (auto _ : state) {                                      \
