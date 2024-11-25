@@ -19,20 +19,13 @@ public:
 public:
   ValueCtor value_ctor;
 
-private:
-  void post_stop() override {
-    value_.reset();
-  }
-
-
+protected:
   void pre_start() override {
-    assert(!value_.has_value());
-    value_ctor(value_);
-    assert(value_.has_value());
+    value_ctor(value);
   }
 
 protected:
-  ValueOpt value_;
+  ValueOpt value;
 };
 
 

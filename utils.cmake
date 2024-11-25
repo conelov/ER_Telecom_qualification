@@ -104,6 +104,7 @@ endfunction()
 
 
 function(san_common out_var suffix fn_gen)
+  unset(${out_var})
   macro(asan)
     target_compile_options(${name} PRIVATE
       -fsanitize=address

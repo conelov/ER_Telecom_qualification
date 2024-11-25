@@ -18,14 +18,14 @@ public:
   std::size_t write_iters;
 
 public:
-  template<typename RGen, typename WGen>
-  void bind(RGen&& rgen, WGen&& wgen) {
+  template<typename R, typename W>
+  void bind(R&& r, W&& w) {
     for (std::size_t i = 0; i < writers; ++i) {
-      emplace_worker(write_iters, carry(wgen, i));
+      emplace_worker(write_iters, carry(w, i));
     }
 
     for (std::size_t i = 0; i < readers; ++i) {
-      emplace_worker(read_iters, carry(rgen, i));
+      emplace_worker(read_iters, carry(r, i));
     }
   }
 

@@ -23,7 +23,7 @@ public:
 
     MultiThreadedRWValuedFixture::bind(
       [this, str_gen](auto ... args) mutable {
-        auto const volatile dummy = value_->resolve(str_gen(args...));
+        auto const volatile dummy = value->resolve(str_gen(args...));
         // [[maybe_unused]] auto const volatile c = dummy.front();
       },
 
@@ -31,7 +31,7 @@ public:
         if (idx_str.empty()) {
           idx_str = std::to_string(idx);
         }
-        value_->update(str_gen(idx, i), idx_str);
+        value->update(str_gen(idx, i), idx_str);
       });
   }
 };

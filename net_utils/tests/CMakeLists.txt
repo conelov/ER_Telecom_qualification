@@ -36,7 +36,9 @@ macro(test_once name)
   endforeach()
 endmacro()
 
-test_once(LruStorage)
+foreach(i LruStorage PriorityMutex)
+  test_once(${i})
+endforeach()
 
 
 san_common(tests DnsCache test_common)

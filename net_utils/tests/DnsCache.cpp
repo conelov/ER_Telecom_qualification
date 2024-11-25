@@ -21,14 +21,9 @@ class DnsCacheTest
     : public ::testing::Test
     , public aux::DnsCacheFixture {
 protected:
-  static auto constexpr r_iters              = 100'000;
-  static auto constexpr w_iters              = 10'000;
-  static auto constexpr w_exclusive_relation = 5. / 10;
-  static_assert(w_exclusive_relation >= 0);
-  static_assert(w_exclusive_relation <= 1);
-
-protected:
   void SetUp() override {
+    read_iters  = 100'000;
+    write_iters = 10'000;
     this->set_rw_relation(1. / 2);
     this->readers *= 2;
     this->writers = this->writers * 2;
