@@ -57,7 +57,7 @@ public:
     }
 
     if (size() == capacity_) {
-      auto const r_count = map_.erase(list_.back().key);
+      [[maybe_unused]] auto const r_count = map_.erase(list_.back().key);
       assert(r_count == 1);
       list_.pop_back();
     }

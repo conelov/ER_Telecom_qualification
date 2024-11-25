@@ -10,29 +10,42 @@ using namespace nut;
 
 
 TEST(DnsCacheTest_smoke, smoke) {
-  aux::DnsCacheImplLRU c{1};
+  DnsCacheImpl<DnsCacheImplType::lru_std_mx> c{1};
   ASSERT_EQ(c.resolve("www.google.com"), "");
   ASSERT_NO_THROW(c.update("www.google.com", "0.0.0.0"));
   ASSERT_EQ(c.resolve("www.google.com"), "0.0.0.0");
 }
 
 
-class DnsCacheTest
+template<typename>
+class DnsCacheTest;
+
+
+template<DnsCacheImplType type>
+class DnsCacheTest<std::integral_constant<DnsCacheImplType, type>>
     : public ::testing::Test
-    , public aux::DnsCacheFixture {
+    , public aux::DnsCacheFixture<type> {
 protected:
   void SetUp() override {
-    read_iters  = 100'000;
-    write_iters = 10'000;
+    this->read_iters  = 100'000;
+    this->write_iters = 10'000;
     this->set_rw_relation(1. / 2);
     this->readers *= 2;
     this->writers = this->writers * 2;
-    bind(1000);
+    this->bind(1000);
   }
 };
 
 
-TEST_F(DnsCacheTest, high_load) {
+using Storage = ::testing::Types<
+  // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_std_mx>,
+  // std::integral_constant<DnsCacheImplType, DnsCacheImplType::rcu_spinlock_rw>,
+  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_std_mx>,
+  std::integral_constant<DnsCacheImplType, DnsCacheImplType::lru_priority_mutex>>;
+TYPED_TEST_SUITE(DnsCacheTest, Storage);
+
+
+TYPED_TEST(DnsCacheTest, high_load) {
   ASSERT_NO_THROW(this->start());
 }
 

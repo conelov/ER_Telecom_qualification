@@ -10,20 +10,22 @@
 namespace nut::aux {
 
 
-class DnsCacheFixture : public MultiThreadedRWValuedFixture<DnsCacheImplLRU> {
+template<DnsCacheImplType type>
+class DnsCacheFixture : public MultiThreadedRWValuedFixture<DnsCacheImpl<type>> {
 public:
   void bind(std::size_t cache_size) {
-    value_ctor = [cache_size](ValueOpt& opt) {
+    using Base       = MultiThreadedRWValuedFixture<DnsCacheImpl<type>>;
+    this->value_ctor = [cache_size](typename Base::ValueOpt& opt) {
       opt.emplace(cache_size);
     };
 
     auto str_gen = [this](std::size_t idx, std::size_t i) {
-      return std::to_string(idx * writers + i);
+      return std::to_string(idx * this->writers + i);
     };
 
-    MultiThreadedRWValuedFixture::bind(
-      [this, str_gen](auto ... args) mutable {
-        auto const volatile dummy = value->resolve(str_gen(args...));
+    Base::bind(
+      [this, str_gen](auto... args) mutable {
+        auto const volatile dummy = this->value->resolve(str_gen(args...));
         // [[maybe_unused]] auto const volatile c = dummy.front();
       },
 
@@ -31,7 +33,7 @@ public:
         if (idx_str.empty()) {
           idx_str = std::to_string(idx);
         }
-        value->update(str_gen(idx, i), idx_str);
+        this->value->update(str_gen(idx, i), idx_str);
       });
   }
 };
