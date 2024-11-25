@@ -99,7 +99,7 @@ void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
   }
 }
 
-template class DnsCacheImplRcu<std::shared_mutex>;
+template class DnsCacheImplRcu<std::mutex>;
 template class DnsCacheImplRcu<PriorityMutex<>>;
 
 

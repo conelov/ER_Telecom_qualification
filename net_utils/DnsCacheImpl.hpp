@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <mutex>
-#include <shared_mutex>
 #include <type_traits>
 
 #include <net_utils/LruStorage.hpp>
@@ -65,7 +64,7 @@ private:
 };
 
 
-extern template class DnsCacheImplLRU<std::shared_mutex>;
+extern template class DnsCacheImplLRU<std::mutex>;
 extern template class DnsCacheImplLRU<PriorityMutex<>>;
 
 
@@ -83,7 +82,7 @@ enum class DnsCacheImplType {
 template<DnsCacheImplType type>
 using DnsCacheImpl =
   std::conditional_t<type == DnsCacheImplType::rcu_std_mx,
-    aux::DnsCacheImplRcu<std::shared_mutex>,
+    aux::DnsCacheImplRcu<std::mutex>,
     //
     std::conditional_t<type == DnsCacheImplType::rcu_priority_mutex,
       aux::DnsCacheImplRcu<PriorityMutex<>>,

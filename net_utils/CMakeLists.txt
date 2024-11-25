@@ -5,6 +5,7 @@ add_library(${name}
   Singleton.hpp
   LruStorage.hpp
   RcuStorage.hpp
+  RcuLruStorage.hpp
   PriorityMutex.hpp
   DnsCache.hpp
   DnsCacheImpl.hpp src/DnsCacheImpl.cpp

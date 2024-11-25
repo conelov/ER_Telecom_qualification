@@ -11,8 +11,8 @@
 namespace nut {
 
 
-template<typename T_, typename Lock_>
-class RcuStorage final {
+template<typename T_, typename Lock_, bool rw_mutex_ = false>
+class RcuStorage {
 public:
   using value_type = T_;
   using ReadPtr    = std::shared_ptr<value_type const>;
@@ -23,12 +23,12 @@ public:
 
 
   explicit RcuStorage(MutablePtr in)
-      : p_{std::move(in)} {
+      : rcu_rev_{std::move(in)} {
   }
 
 
   [[nodiscard]] ReadPtr load() const {
-    return std::atomic_load_explicit(&p_, std::memory_order_relaxed);
+    return std::atomic_load_explicit(&rcu_rev_, std::memory_order_relaxed);
   }
 
 
@@ -37,50 +37,52 @@ public:
   }
 
 
-  template<typename Mod>
-  void modify(bool const exclusive, Mod&& mod) {
+  template<typename Mod, bool rw_mutex = rw_mutex_>
+  std::enable_if_t<rw_mutex, ReadPtr> modify(bool const exclusive, Mod&& mod) {
     if (exclusive) {
-      modify_impl<true>(std::forward<Mod>(mod));
+      return modify_impl<true>(std::forward<Mod>(mod));
     } else {
-      modify_impl<false>(std::forward<Mod>(mod));
+      return modify_impl<false>(std::forward<Mod>(mod));
     }
   }
 
 
   template<typename Mod>
-  void modify(Mod&& mod) {
-    modify_impl<false>(std::forward<Mod>(mod));
+  ReadPtr modify(Mod&& mod) {
+    return modify_impl<false>(std::forward<Mod>(mod));
   }
 
 private:
   template<bool exclusive, typename Mod>
-  void modify_impl(Mod&& mod) {
+  ReadPtr modify_impl(Mod&& mod) {
     static_assert(std::is_invocable_r_v<MutablePtr, Mod, MutablePtr>);
+    MutablePtr p_new;
     {
       auto const lk = [this]() noexcept {
-        if constexpr (exclusive) {
-          return std::unique_lock{lock_};
-        } else {
+        if constexpr (rw_mutex_ && exclusive) {
           return std::shared_lock{lock_};
+        } else {
+          return std::unique_lock{lock_};
         }
       }();
 
-      MutablePtr p_old = std::atomic_load_explicit(&p_, std::memory_order_acquire);
+      MutablePtr p_old = std::atomic_load_explicit(&rcu_rev_, std::memory_order_acquire);
       do {
         if (std::atomic_compare_exchange_strong_explicit(
-              &p_,
+              &rcu_rev_,
               &p_old,
-              mod(p_old ? std::make_shared<value_type>(*p_old) : MutablePtr{}),
+              p_new = mod(p_old ? std::make_shared<value_type>(*p_old) : MutablePtr{}),
               std::memory_order_acq_rel, std::memory_order_acquire)) {
           break;
         }
         thread_pause();
       } while (true);
     }
+    return p_new;
   }
 
 private:
-  MutablePtr p_;
+  MutablePtr rcu_rev_;
   Lock_      lock_;
 };
 

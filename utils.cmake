@@ -83,6 +83,20 @@ function(target_common target)
   target_link_options(${target} PRIVATE
     $<$<CONFIG:DEBUG>:-v>
   )
+  target_compile_definitions(${target} PUBLIC
+    $<$<BOOL:${BUILD_TESTING}>:NUT_TESTING>
+    NUT_CXX_${CMAKE_CXX_COMPILER_ID}
+  )
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")
+    target_compile_definitions(${target} PUBLIC
+      NUT_CXX_GNU_L_11
+    )
+  endif()
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    target_compile_definitions(${target} PUBLIC
+      NUT_ARCH_X86
+    )
+  endif()
 endfunction()
 
 
