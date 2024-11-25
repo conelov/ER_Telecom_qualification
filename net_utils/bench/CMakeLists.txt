@@ -29,12 +29,22 @@ function(bench_common out_var suffix)
 endfunction()
 
 
-san_common(ts DnsCacheImpl bench_common)
-foreach(i IN LISTS ts)
-  target_sources(${i} PRIVATE
-    DnsCacheImpl.cpp
-  )
-  target_link_libraries(${i} PRIVATE
-    ER_Telecom_net_utils
-  )
+macro(bench_once name)
+  if(GBENCH_SAN)
+    san_common(ts ${name} bench_common)
+  else()
+    bench_common(ts ${name})
+  endif()
+  foreach(i IN LISTS ts)
+    target_sources(${i} PRIVATE
+      ${name}.cpp
+    )
+    target_link_libraries(${i} PRIVATE
+      ER_Telecom_net_utils
+    )
+  endforeach()
+endmacro()
+
+foreach(i DnsCacheImpl PriorityMutex)
+  bench_once(${i})
 endforeach()

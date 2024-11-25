@@ -3,6 +3,25 @@
 #include <benchmark/benchmark.h>
 
 
+#define BENCH_T(fixture, name, type)                                           \
+  BENCHMARK_TEMPLATE_DEFINE_F(fixture, name, type)(benchmark::State & state) { \
+    for (auto _ : state) {                                                     \
+      start();                                                                 \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK_REGISTER_F(fixture, name)                                          \
+    ->Apply(generate_dependent_args)
+
+#define BENCH(fixture, name)                                    \
+  BENCHMARK_DEFINE_F(fixture, name)(benchmark::State & state) { \
+    for (auto _ : state) {                                      \
+      start();                                                  \
+    }                                                           \
+  }                                                             \
+  BENCHMARK_REGISTER_F(fixture, name)                           \
+    ->Apply(generate_dependent_args)
+
+
 namespace nut {
 
 
@@ -20,11 +39,11 @@ public:
     state.counters["rs"] = this->readers;
     state.counters["ws"] = this->writers;
 
-    this->read_iters            = state.range(r_idx);
+    this->read_iters         = state.range(r_idx);
     state.counters["r_rate"] = benchmark::Counter(this->read_iters / this->readers, benchmark::Counter::kIsRate);
     state.counters["r_it"]   = this->read_iters;
 
-    this->write_iters            = state.range(w_idx);
+    this->write_iters        = state.range(w_idx);
     state.counters["w_rate"] = benchmark::Counter(this->write_iters / this->writers, benchmark::Counter::kIsRate);
     state.counters["w_it"]   = this->write_iters;
   }

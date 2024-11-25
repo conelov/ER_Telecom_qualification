@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstdint>
+#include <limits>
 
 #include <net_utils/utils.hpp>
 

@@ -23,7 +23,7 @@ public:
 };
 
 
-void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
+void generate_dependent_args(benchmark::internal::Benchmark* b) {
   for (auto const cache_size : {10, 1'000, 10'000}) {
     for (auto const rw_rel : rel_range_default) {
       for (auto const wit : {10, 1'000, 10'000}) {
@@ -36,17 +36,7 @@ void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
 }
 
 
-BENCHMARK_DEFINE_F(DnsCacheBench, general)(benchmark::State& state) {
-  for (auto _ : state) {
-    start();
-  }
-}
-
-
-BENCHMARK_REGISTER_F(DnsCacheBench, general)
-  ->Apply(GenerateDependentArgs)
-  ->Unit(benchmark::kMillisecond)
-  ->MeasureProcessCPUTime();
-
-
 }// namespace
+
+
+BENCH(DnsCacheBench, general);
