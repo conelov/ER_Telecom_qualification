@@ -1,0 +1,37 @@
+2024-11-25T17:10:59+03:00
+Running /home/dym/CLionProjects/ER-Telecom_qualification/cmake-build-release/net_utils/bench/ER_Telecom_qualif-bench-RcuStorage
+Run on (24 X 5159.77 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x12)
+  L1 Instruction 32 KiB (x12)
+  L2 Unified 512 KiB (x12)
+  L3 Unified 32768 KiB (x2)
+Load Average: 2.69, 3.17, 2.47
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                                    Time             CPU   Iterations       r_it         rs       w_it         ws
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+RcuStorageBench<std::shared_mutex>/std_mx/90000/10000/10000               30.0 ns         28.5 ns     24938925        10k         22        10k          2
+RcuStorageBench<std::shared_mutex>/std_mx/90000/100000/10000              38.3 ns         27.9 ns     24911264       100k         22        10k          2
+RcuStorageBench<std::shared_mutex>/std_mx/90000/10000/100000              31.0 ns         27.5 ns     25395884        10k         22       100k          2
+RcuStorageBench<std::shared_mutex>/std_mx/90000/100000/100000             40.1 ns         27.2 ns     26290476       100k         22       100k          2
+RcuStorageBench<std::shared_mutex>/std_mx/50000/10000/10000               30.5 ns         27.4 ns     26215607        10k         12        10k         12
+RcuStorageBench<std::shared_mutex>/std_mx/50000/100000/10000              36.4 ns         27.1 ns     26068605       100k         12        10k         12
+RcuStorageBench<std::shared_mutex>/std_mx/50000/10000/100000              49.5 ns         28.3 ns     24257015        10k         12       100k         12
+RcuStorageBench<std::shared_mutex>/std_mx/50000/100000/100000             64.8 ns         27.9 ns     24504147       100k         12       100k         12
+RcuStorageBench<std::shared_mutex>/std_mx/10000/10000/10000               35.4 ns         30.5 ns     25917157        10k          2        10k         22
+RcuStorageBench<std::shared_mutex>/std_mx/10000/100000/10000              34.1 ns         27.4 ns     25657520       100k          2        10k         22
+RcuStorageBench<std::shared_mutex>/std_mx/10000/10000/100000              83.0 ns         29.0 ns     24444506        10k          2       100k         22
+RcuStorageBench<std::shared_mutex>/std_mx/10000/100000/100000             77.0 ns         27.4 ns     24607042       100k          2       100k         22
+RcuStorageBench<PriorityMutex<>>/priority_mutex/90000/10000/10000         28.0 ns         26.6 ns     26874643        10k         22        10k          2
+RcuStorageBench<PriorityMutex<>>/priority_mutex/90000/100000/10000        39.2 ns         28.0 ns     25533926       100k         22        10k          2
+RcuStorageBench<PriorityMutex<>>/priority_mutex/90000/10000/100000        31.8 ns         28.1 ns     25615480        10k         22       100k          2
+RcuStorageBench<PriorityMutex<>>/priority_mutex/90000/100000/100000       42.3 ns         27.8 ns     25653860       100k         22       100k          2
+RcuStorageBench<PriorityMutex<>>/priority_mutex/50000/10000/10000         30.6 ns         27.4 ns     26395831        10k         12        10k         12
+RcuStorageBench<PriorityMutex<>>/priority_mutex/50000/100000/10000        37.1 ns         27.1 ns     26446618       100k         12        10k         12
+RcuStorageBench<PriorityMutex<>>/priority_mutex/50000/10000/100000        52.7 ns         27.2 ns     26325457        10k         12       100k         12
+RcuStorageBench<PriorityMutex<>>/priority_mutex/50000/100000/100000       55.4 ns         26.7 ns     26689726       100k         12       100k         12
+RcuStorageBench<PriorityMutex<>>/priority_mutex/10000/10000/10000         32.5 ns         26.7 ns     26561054        10k          2        10k         22
+RcuStorageBench<PriorityMutex<>>/priority_mutex/10000/100000/10000        33.8 ns         27.0 ns     26583757       100k          2        10k         22
+RcuStorageBench<PriorityMutex<>>/priority_mutex/10000/10000/100000        84.1 ns         27.0 ns     24949899        10k          2       100k         22
+RcuStorageBench<PriorityMutex<>>/priority_mutex/10000/100000/100000       80.2 ns         27.1 ns     26609062       100k          2       100k         22

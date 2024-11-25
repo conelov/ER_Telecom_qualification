@@ -19,7 +19,7 @@ class DnsCacheFixture : public MultiThreadedRWValuedFixture<DnsCacheImpl<type>> 
 public:
   void bind(std::size_t cache_size) {
     using Base       = MultiThreadedRWValuedFixture<DnsCacheImpl<type>>;
-    this->value_ctor = [cache_size](typename Base::ValueOpt& opt) {
+    this->value_ctor = [cache_size](auto& opt) {
       opt.emplace(cache_size);
     };
 

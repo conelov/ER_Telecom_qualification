@@ -36,7 +36,7 @@ macro(test_once name)
   endforeach()
 endmacro()
 
-foreach(i LruStorage PriorityMutex)
+foreach(i LruStorage PriorityMutex RcuStorage)
   test_once(${i})
 endforeach()
 

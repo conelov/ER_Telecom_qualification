@@ -1,4 +1,4 @@
-2024-11-25T05:59:30+03:00
+2024-11-25T17:02:22+03:00
 Running /home/dym/CLionProjects/ER-Telecom_qualification/cmake-build-release/net_utils/bench/ER_Telecom_qualif-bench-PriorityMutex
 Run on (24 X 5159.77 MHz CPU s)
 CPU Caches:
@@ -6,32 +6,10 @@ CPU Caches:
   L1 Instruction 32 KiB (x12)
   L2 Unified 512 KiB (x12)
   L3 Unified 32768 KiB (x2)
-Load Average: 2.45, 4.71, 3.44
+Load Average: 1.01, 1.75, 1.56
 ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Benchmark                                                                       Time             CPU   Iterations       r_it     r_rate         rs       w_it     w_rate         ws
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-PriorityMutexBench<std::shared_mutex>/std_mx/10000/10000/10000               7.49 ns         6.99 ns    101346080        10k 7.05455k/s          2        10k  640.553/s         22
-PriorityMutexBench<std::shared_mutex>/std_mx/10000/10000/100000              9.38 ns         7.14 ns    100597435        10k 6.96034k/s          2       100k 6.32695k/s         22
-PriorityMutexBench<std::shared_mutex>/std_mx/10000/100000/10000              10.1 ns         7.00 ns     81872137       100k 87.2516k/s          2        10k  792.245/s         22
-PriorityMutexBench<std::shared_mutex>/std_mx/10000/100000/100000             10.3 ns         7.16 ns     89885850       100k 77.7258k/s          2       100k 7.06528k/s         22
-PriorityMutexBench<std::shared_mutex>/std_mx/50000/10000/10000               7.41 ns         7.17 ns    102637493        10k 1.13222k/s         12        10k 1.13222k/s         12
-PriorityMutexBench<std::shared_mutex>/std_mx/50000/10000/100000              8.54 ns         7.07 ns     81218469        10k 1.45037k/s         12       100k 14.5089k/s         12
-PriorityMutexBench<std::shared_mutex>/std_mx/50000/100000/10000              8.14 ns         7.05 ns    100688987       100k 11.7366k/s         12        10k 1.17324k/s         12
-PriorityMutexBench<std::shared_mutex>/std_mx/50000/100000/100000             9.43 ns         6.90 ns     81576902       100k 14.8034k/s         12       100k 14.8034k/s         12
-PriorityMutexBench<std::shared_mutex>/std_mx/90000/10000/10000               7.39 ns         6.99 ns    102830998        10k  631.608/s         22        10k 6.95604k/s          2
-PriorityMutexBench<std::shared_mutex>/std_mx/90000/10000/100000              7.39 ns         7.11 ns    103003891        10k  619.604/s         22       100k 68.2384k/s          2
-PriorityMutexBench<std::shared_mutex>/std_mx/90000/100000/10000              9.12 ns         7.10 ns    101380940       100k 6.31453k/s         22        10k 6.94668k/s          2
-PriorityMutexBench<std::shared_mutex>/std_mx/90000/100000/100000             9.14 ns         6.94 ns    103309020       100k 6.33656k/s         22       100k 69.7092k/s          2
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/10000/10000/10000         8.37 ns         7.15 ns    101019754        10k 6.92078k/s          2        10k  628.407/s         22
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/10000/10000/100000        22.9 ns         7.05 ns     81061542        10k 8.75267k/s          2       100k 7.95618k/s         22
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/10000/100000/10000        9.18 ns         7.32 ns     98334814       100k 69.5008k/s          2        10k  631.067/s         22
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/10000/100000/100000       19.9 ns         7.29 ns    103151896       100k 66.5148k/s          2       100k 6.04619k/s         22
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/50000/10000/10000         8.74 ns         6.95 ns     98415747        10k 1.21822k/s         12        10k 1.21822k/s         12
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/50000/10000/100000        13.8 ns         7.00 ns     80616859        10k  1.4769k/s         12       100k 14.7743k/s         12
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/50000/100000/10000        10.7 ns         7.12 ns    100959943       100k 11.5932k/s         12        10k 1.15891k/s         12
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/50000/100000/100000       28.6 ns         6.96 ns     81190406       100k 14.7391k/s         12       100k 14.7391k/s         12
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/90000/10000/10000         8.03 ns         6.96 ns    103199299        10k  631.811/s         22        10k 6.95827k/s          2
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/90000/10000/100000        8.36 ns         6.97 ns    103341079        10k  630.471/s         22       100k 69.4352k/s          2
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/90000/100000/10000        13.3 ns         7.32 ns     98420948       100k 6.30644k/s         22        10k 6.93778k/s          2
-PriorityMutexBench<PriorityMutex<>>/priority_mutex/90000/100000/100000       17.9 ns         7.30 ns     98563245       100k 6.31292k/s         22       100k 69.4491k/s          2
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                                       Time             CPU   Iterations       r_it         rs       w_it         ws
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+PriorityMutexBench<std::shared_mutex>/std_mx/10000/10000/10000               8.49 ns         7.22 ns     98633280        10k          2        10k         22
+PriorityMutexBench<std::shared_mutex>/std_mx/10000/10000/100000              9.46 ns         7.33 ns     98247350        10k          2       100k         22

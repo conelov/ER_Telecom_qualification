@@ -1,6 +1,6 @@
 #include <net_utils/PriorityMutex.hpp>
 
-#include <net_utils/aux/PriorityMutexFixture.hpp>
+#include <net_utils/aux/RcuStorageFixture.hpp>
 
 #include <net_utils/bench/common.hpp>
 
@@ -12,7 +12,7 @@ namespace {
 
 
 template<typename Mx_>
-class PriorityMutexBench : public ThreadedRWBench<aux::PriorityMutexFixture<Mx_>> {
+class RcuStorageBench : public ThreadedRWBench<aux::RcuStorageFixture<Mx_>> {
 public:
   void SetUp(benchmark::State& state) override {
     this->bench_bind(state, 1, 2, 0);
@@ -35,5 +35,5 @@ void generate_dependent_args(benchmark::internal::Benchmark* b) {
 }// namespace
 
 
-BENCH_T(PriorityMutexBench, std_mx, std::shared_mutex);
-BENCH_T(PriorityMutexBench, priority_mutex, PriorityMutex<>);
+BENCH_T(RcuStorageBench, std_mx, std::shared_mutex);
+BENCH_T(RcuStorageBench, priority_mutex, PriorityMutex<>);

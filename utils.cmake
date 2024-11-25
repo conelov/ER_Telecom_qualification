@@ -92,6 +92,8 @@ function(aux_common target)
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWValuedFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/PriorityMutexFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/RcuStorageFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/san_report_breakpoints.cpp"
   )

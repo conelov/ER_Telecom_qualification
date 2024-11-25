@@ -45,6 +45,6 @@ macro(bench_once name)
   endforeach()
 endmacro()
 
-foreach(i DnsCacheImpl PriorityMutex)
+foreach(i DnsCacheImpl PriorityMutex RcuStorage)
   bench_once(${i})
 endforeach()

@@ -19,6 +19,7 @@ public:
 
 
   auto start() {
+    iter_counter_.store(0, std::memory_order_release);
     pre_start();
     assert(!run_);
     run_ = true;
@@ -43,9 +44,15 @@ public:
 
         for (std::size_t i = 0; i < iters; ++i) {
           fn(i);
+          iter_counter_.fetch_add(1, std::memory_order_relaxed);
         }
       },
       std::forward<Fn>(fn));
+  }
+
+
+  [[nodiscard]] std::size_t iter_counter() const {
+    return iter_counter_.load(std::memory_order_acquire);
   }
 
 
@@ -75,6 +82,7 @@ private:
   std::vector<std::thread> threads_;
   std::mutex               mx_;
   std::condition_variable  cv_;
+  std::atomic<std::size_t> iter_counter_;
   std::atomic<bool>        run_ = false;
 };
 

@@ -26,7 +26,7 @@ namespace nut {
 
 
 std::size_t constexpr rw_rel_multi = 100'000;
-auto constexpr rel_range_default   = {1. / 10, 5. / 10, 9. / 10};
+auto constexpr rel_range_default   = {9. / 10, 5. / 10, 1. / 10};
 
 
 template<typename Base_>
@@ -39,13 +39,13 @@ public:
     state.counters["rs"] = this->readers;
     state.counters["ws"] = this->writers;
 
-    this->read_iters         = state.range(r_idx);
+    this->read_iters = state.range(r_idx);
     // state.counters["r_rate"] = benchmark::Counter(this->read_iters / this->readers, benchmark::Counter::kIsRate);
-    state.counters["r_it"]   = this->read_iters;
+    state.counters["r_it"] = this->read_iters;
 
-    this->write_iters        = state.range(w_idx);
+    this->write_iters = state.range(w_idx);
     // state.counters["w_rate"] = benchmark::Counter(this->write_iters / this->writers, benchmark::Counter::kIsRate);
-    state.counters["w_it"]   = this->write_iters;
+    state.counters["w_it"] = this->write_iters;
   }
 };
 
