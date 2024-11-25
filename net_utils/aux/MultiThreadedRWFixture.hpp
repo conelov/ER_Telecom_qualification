@@ -14,32 +14,27 @@ class MultiThreadedRWFixture : public MultiThreadedFixture {
 public:
   std::size_t readers;
   std::size_t writers;
+  std::size_t read_iters;
+  std::size_t write_iters;
 
 public:
   template<typename RGen, typename WGen>
-  void up(std::size_t r_iters, std::size_t w_iters, RGen&& rgen, WGen&& wgen) {
-    MultiThreadedFixture::up();
-
+  void bind(RGen&& rgen, WGen&& wgen) {
     for (std::size_t i = 0; i < writers; ++i) {
-      emplace_worker(w_iters, carry(wgen, i));
+      emplace_worker(write_iters, carry(wgen, i));
     }
 
     for (std::size_t i = 0; i < readers; ++i) {
-      emplace_worker(r_iters, carry(rgen, i));
+      emplace_worker(read_iters, carry(rgen, i));
     }
   }
 
 
-  void down() override {
-    MultiThreadedFixture::down();
-  }
-
-
-  void set_rw_relation(float rw_relation) {
+  void set_rw_relation(float rw_relation, std::size_t ths = NUT_CPU_COUNT) {
     assert(rw_relation >= 0);
     assert(rw_relation <= 1);
-    readers = std::round(NUT_CPU_COUNT * rw_relation);
-    writers = NUT_CPU_COUNT - readers;
+    readers = std::round(ths * rw_relation);
+    writers = ths - readers;
   }
 };
 

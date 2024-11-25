@@ -1,6 +1,3 @@
-#include <chrono>
-#include <thread>
-
 #include <benchmark/benchmark.h>
 
 #include <net_utils/aux/DnsCacheFixture.hpp>
@@ -14,45 +11,25 @@ using namespace nut;
 namespace {
 
 
-std::size_t constexpr rw_rel_mutli = 100'000;
-
-
-class DnsCacheBench
-    : public benchmark::Fixture
-    , public aux::DnsCacheFixture {
+class DnsCacheBench : public ThreadedRWBench<aux::DnsCacheFixture> {
 public:
   void SetUp(benchmark::State& state) override {
-    std::size_t const cache_size = state.range(0);
-    state.counters["size"]       = cache_size;
+    bench_bind(state, 2, 3, 1);
 
-    std::size_t const cache_cap = state.range(1);
-    state.counters["cap"]       = cache_cap;
-
-    rw_relation          = static_cast<float>(state.range(3)) / rw_rel_mutli;
-    state.counters["rs"] = readers();
-    state.counters["ws"] = writers();
-
-    iterations_            = state.range(2);
-    state.counters["its"] = iterations_;
-
-    state.counters["rate"] = benchmark::Counter(iterations_, benchmark::Counter::kIsRate);
-
-    up(cache_size, cache_cap);
-  }
-
-  void TearDown(benchmark::State& state) override {
-    down();
-    // state.SetComplexityN(iterations_);
+    auto const c_size       = state.range(0);
+    state.counters["cache"] = c_size;
+    bind(c_size);
   }
 };
 
 
 void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
-  std::size_t constexpr size_lo = 8;
-  for (auto const rw_rel : {9. / 10, 5. / 10, 1. / 10}) {
-    for (auto const size : benchmark::CreateRange(size_lo, 2 << 12, 2 << 2)) {
-      for (auto const cap : benchmark::CreateDenseRange(15,  30, 5)) {
-        b->Args({size, static_cast<std::int64_t>(size * (cap / 10.)), size << 1, static_cast<std::int64_t>(std::round(rw_rel * rw_rel_mutli))});
+  for (auto const cache_size : {10, 1'000, 10'000}) {
+    for (auto const rw_rel : rel_range_default) {
+      for (auto const wit : {10, 1'000, 10'000}) {
+        for (auto const rit : {10, 10'000, 1'000'000}) {
+          b->Args({cache_size, static_cast<std::int64_t>(std::round(rw_rel * rw_rel_multi)), rit, wit});
+        }
       }
     }
   }
@@ -61,7 +38,7 @@ void GenerateDependentArgs(benchmark::internal::Benchmark* b) {
 
 BENCHMARK_DEFINE_F(DnsCacheBench, general)(benchmark::State& state) {
   for (auto _ : state) {
-    compute();
+    start();
   }
 }
 

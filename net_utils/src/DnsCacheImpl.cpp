@@ -22,7 +22,7 @@ void DnsCacheImplLRU::update(const std::string& name, const std::string& ip) {
 
 std::string DnsCacheImplLRU::resolve(const std::string& name) const {
   {
-    std::shared_lock const lock{mx_};
+    std::lock_guard const lock{mx_};
     if (auto const out_ptr = st_.get(name)) {
       return *out_ptr;
     } else {

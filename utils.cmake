@@ -78,7 +78,7 @@ function(target_common target)
   target_compile_options(${target} PRIVATE
     $<$<OR:$<COMPILE_LANG_AND_ID:CXX,Clang>,$<COMPILE_LANG_AND_ID:CXX,GNU>>:-Wall>
     $<$<CONFIG:DEBUG>:-v>
-#    $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
+    #    $<$<AND:$<COMPILE_LANG_AND_ID:CXX,GNU>,$<CONFIG:DEBUG>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,10.0.0>>:-fanalyzer>
   )
   target_link_options(${target} PRIVATE
     $<$<CONFIG:DEBUG>:-v>
@@ -91,11 +91,144 @@ function(aux_common target)
   target_sources(${target} PRIVATE
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWValuedFixture.hpp"
     "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
+    "${PROJECT_SOURCE_DIR}/net_utils/aux/san_report_breakpoints.cpp"
   )
 
   cpu_count(c)
   target_compile_definitions(${name} PRIVATE
     NUT_CPU_COUNT=${c}
   )
+endfunction()
+
+
+function(san_common out_var suffix fn_gen)
+  macro(asan)
+    target_compile_options(${name} PRIVATE
+      -fsanitize=address
+      -fno-common
+      -fno-omit-frame-pointer
+      -fsanitize-address-use-after-scope
+    )
+    target_link_options(${name} PRIVATE
+      -fsanitize=address
+    )
+  endmacro()
+
+  macro(tsan)
+    target_compile_options(${name} PUBLIC
+      -fsanitize=thread
+    )
+    target_link_options(${name} PUBLIC
+      -fsanitize=thread
+    )
+  endmacro()
+
+  macro(msan)
+    target_compile_options(${name} PRIVATE
+      -fsanitize=memory
+      -fsanitize-memory-track-origins
+      -fno-omit-frame-pointer
+      -fno-optimize-sibling-calls
+    )
+    target_link_options(${name} PRIVATE
+      -fsanitize=memory
+    )
+  endmacro()
+
+  macro(usan)
+    target_compile_options(${name} PRIVATE
+      -fsanitize=undefined
+      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+      -fsanitize=integer
+      -fsanitize=nullability
+      >
+    )
+    target_link_options(${name} PRIVATE
+      -fsanitize=undefined
+      -lubsan
+      $<$<COMPILE_LANG_AND_ID:CXX,Clang>:
+      -fsanitize=integer
+      -fsanitize=nullability
+      >
+    )
+  endmacro()
+
+  macro(lsan)
+    target_compile_options(${name} PUBLIC
+      -fsanitize=leak
+    )
+    target_link_options(${name} PUBLIC
+      -fsanitize=leak
+    )
+  endmacro()
+
+  foreach(i IN LISTS TESTS_SANITIZE)
+    if("${i}" STREQUAL "address")
+      cmake_language(CALL ${fn_gen} name "${suffix}-asan")
+      asan()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "mem")
+      if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        message(STATUS "Memory sanitizer disabled.")
+
+      else()
+        cmake_language(CALL ${fn_gen} name "${suffix}-msan")
+        msan()
+      endif()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "thread")
+      cmake_language(CALL ${fn_gen} name "${suffix}-tsan")
+      tsan()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "leak")
+      cmake_language(CALL ${fn_gen} name "${suffix}-lsan")
+      lsan()
+      list(APPEND ${out_var} ${name})
+    endif()
+
+    if("${i}" STREQUAL "ub")
+      cmake_language(CALL ${fn_gen} name "${suffix}-usan")
+      usan()
+      list(APPEND ${out_var} ${name})
+    endif()
+  endforeach()
+
+  cmake_language(CALL ${fn_gen} name "${suffix}")
+  list(APPEND ${out_var} ${name})
+
+  set(${out_var} ${${out_var}} PARENT_SCOPE)
+endfunction()
+
+
+function(collect_targets target scope)
+  set(scope_var ${PROJECT_NAME}_${CMAKE_CURRENT_FUNCTION}_${scope})
+
+  set(callback_fn_var ${PROJECT_NAME}_${CMAKE_CURRENT_FUNCTION}_${scope}_callback)
+  set(build_all_var ${PROJECT_NAME}_build_all_${scope})
+  if(NOT TARGET ${build_all_var})
+    add_custom_target(${build_all_var})
+
+    function(${callback_fn_var} scope scope_var build_all_var)
+      unset(args)
+      foreach(i IN LISTS ${scope_var})
+        set(args "${args} COMMAND \"$<TARGET_FILE:${i}>\"")
+      endforeach()
+      set(run_all_var ${PROJECT_NAME}_run_all_${scope})
+      cmake_language(EVAL CODE "add_custom_target(${run_all_var} USES_TERMINAL ${args})")
+      add_dependencies(${run_all_var} ${build_all_var})
+    endfunction()
+    cmake_language(EVAL CODE "cmake_language(DEFER DIRECTORY \"${PROJECT_SOURCE_DIR}\" CALL ${callback_fn_var} ${scope} ${scope_var} ${build_all_var})")
+  endif()
+
+  add_dependencies(${build_all_var} ${target})
+  list(APPEND ${scope_var} ${target})
+  set(${scope_var} "${${scope_var}}" CACHE INTERNAL "")
 endfunction()

@@ -47,20 +47,21 @@ public:
   }
 
 
-  template<typename Key, typename... VArgs>
-  value_type& put(Key&& key, VArgs&&... v_args) {
+  template<typename Key, typename Value>
+  value_type& put(Key&& key, Value&& value) {
     if (auto const it = map_.find(key); it != map_.cend()) {
       assert(it->second != list_.cend());
-      it->second->value = value_type{std::forward<VArgs>(v_args)...};
+      it->second->value = std::forward<Value>(value);
       move_to_front(it);
       return it->second->value;
     }
 
     if (size() == capacity_) {
-      map_.erase(list_.back().key);
+      auto const r_count = map_.erase(list_.back().key);
+      assert(r_count == 1);
       list_.pop_back();
     }
-    list_.emplace_front(Node{std::forward<Key>(key), {std::forward<VArgs>(v_args)...}});
+    list_.emplace_front(Node{std::forward<Key>(key), std::forward<Value>(value)});
     auto const [it, f] = map_.emplace(list_.front().key, list_.begin());
     assert(f);
     return it->second->value;

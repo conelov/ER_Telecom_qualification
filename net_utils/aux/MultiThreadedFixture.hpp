@@ -7,34 +7,25 @@
 #include <thread>
 #include <vector>
 
+#include <net_utils/utils.hpp>
+
 
 namespace nut::aux {
+
+
 class MultiThreadedFixture {
 public:
-  virtual ~MultiThreadedFixture() {
-    MultiThreadedFixture::down();
-  }
+  virtual ~MultiThreadedFixture() = default;
 
 
-  virtual void up() {
-    run_.store(false, std::memory_order_release);
-  }
-
-
-  virtual void down() {
-    for (auto& thread : threads_) {
-      if (thread.joinable()) {
-        thread.join();
-      }
-    }
-    threads_.clear();
-  }
-
-
-  virtual void start() {
-    assert(!run_.load(std::memory_order_acquire));
-    run_.store(true, std::memory_order_release);
+  auto start() {
+    pre_start();
+    assert(!run_);
+    run_ = true;
     cv_.notify_one();
+    return finally([this] {
+      stop();
+    });
   }
 
 
@@ -46,12 +37,12 @@ public:
         {
           // wait start
           std::unique_lock lk{mx_};
-          cv_.wait(lk, [this] { return run_.load(std::memory_order_acquire); });
+          cv_.wait(lk, [this]() -> bool { return run_; });
         }
         cv_.notify_one();
 
         for (std::size_t i = 0; i < iters; ++i) {
-          fn();
+          fn(i);
         }
       },
       std::forward<Fn>(fn));
@@ -59,10 +50,32 @@ public:
 
 
 private:
+  void stop() {
+    assert(!!run_);
+    for (auto& thread : threads_) {
+      if (thread.joinable()) {
+        thread.join();
+      }
+    }
+    threads_.clear();
+    run_ = false;
+    post_stop();
+  }
+
+
+  virtual void post_stop() {
+  }
+
+
+  virtual void pre_start() {
+  }
+
+
+private:
   std::vector<std::thread> threads_;
   std::mutex               mx_;
   std::condition_variable  cv_;
-  std::atomic<bool>        run_;
+  std::atomic<bool>        run_ = false;
 };
 
 

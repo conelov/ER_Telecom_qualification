@@ -1,12 +1,10 @@
 #pragma once
 
-#include <shared_mutex>
-#include <string>
 #include <mutex>
+#include <string>
 #include <string_view>
 
 #include <net_utils/LruStorage.hpp>
-
 
 
 namespace nut::aux {
@@ -22,9 +20,8 @@ public:
 
 private:
   LruStorage<std::string, std::string, std::string_view> mutable st_;
-  std::shared_mutex mutable mx_;
+  std::mutex mutable mx_;
 };
 
 
-} // namespace nut::aux
-
+}// namespace nut::aux

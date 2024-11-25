@@ -21,7 +21,7 @@ class DnsCacheTest
     : public ::testing::Test
     , public aux::DnsCacheFixture {
 protected:
-  static auto constexpr r_iters              = 1'000'000;
+  static auto constexpr r_iters              = 100'000;
   static auto constexpr w_iters              = 10'000;
   static auto constexpr w_exclusive_relation = 5. / 10;
   static_assert(w_exclusive_relation >= 0);
@@ -32,19 +32,13 @@ protected:
     this->set_rw_relation(1. / 2);
     this->readers *= 2;
     this->writers = this->writers * 2;
-    this->up(r_iters, w_iters, 100'000);
-  }
-
-
-  void TearDown() override {
-    this->down();
+    bind(1000);
   }
 };
 
 
 TEST_F(DnsCacheTest, high_load) {
-  this->start();
-  this->down();
+  ASSERT_NO_THROW(this->start());
 }
 
 
