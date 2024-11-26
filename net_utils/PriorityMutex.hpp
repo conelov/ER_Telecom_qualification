@@ -5,18 +5,18 @@
 #include <cstdint>
 #include <limits>
 
-#include <net_utils/utils.hpp>
+#include <net_utils/ConcurrencyUtils.hpp>
 
 
 namespace nut {
 
 
 /// Read-write spinlock with priority for writers
-template<typename Count_ = std::uint16_t>
-class PriorityMutex final {
+template<typename Count_>
+class PriorityMutexTyped final {
 public:
 #ifndef NDEBUG
-  ~PriorityMutex() {
+  ~PriorityMutexTyped() {
     auto const [r, l] = v_.load();
     assert(r == 0);
     assert(!l);
@@ -124,6 +124,9 @@ private:
 
   static_assert(decltype(v_)::is_always_lock_free);
 };
+
+
+using PriorityMutex = PriorityMutexTyped<std::uint16_t>;
 
 
 }// namespace nut

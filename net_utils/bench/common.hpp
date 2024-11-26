@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numeric>
+
 #include <benchmark/benchmark.h>
 
 
@@ -36,18 +38,27 @@ class ThreadedRWBench
     , public Base_ {
 public:
   void bench_bind(benchmark::State& state, std::size_t r_idx, std::size_t w_idx, std::size_t rw_rel_idx) noexcept {
+    state_ = &state;
+
     this->set_rw_relation(static_cast<float>(state.range(rw_rel_idx)) / rw_rel_multi);
     state.counters["rs"] = this->readers;
     state.counters["ws"] = this->writers;
 
-    this->read_iters = state.range(r_idx);
-    // state.counters["r_rate"] = benchmark::Counter(this->read_iters / this->readers, benchmark::Counter::kIsRate);
+    this->read_iters       = state.range(r_idx);
     state.counters["r_it"] = this->read_iters;
 
-    this->write_iters = state.range(w_idx);
-    // state.counters["w_rate"] = benchmark::Counter(this->write_iters / this->writers, benchmark::Counter::kIsRate);
+    this->write_iters      = state.range(w_idx);
     state.counters["w_it"] = this->write_iters;
   }
+
+
+  void post_stop() override {
+    state_->counters["r_rate"] = *this->read_rate;
+    state_->counters["w_rate"] = *this->write_rate;
+  }
+
+private:
+  benchmark::State* state_ = nullptr;
 };
 
 

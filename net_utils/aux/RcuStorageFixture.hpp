@@ -23,7 +23,7 @@ class RcuStorageFixture
 public:
   void bind() {
     using Base       = MultiThreadedRWValuedFixture<RcuStorageFixtureType<Mx_>>;
-    this->value_ctor = MEM_FN_LAMBDA(.emplace(this->writers, 0u), this);
+    this->value_ctor = MEM_FN_LAMBDA(emplace(this->writers, 0u), this);
 
     Base::bind(
       [this](std::size_t idx, auto...) {

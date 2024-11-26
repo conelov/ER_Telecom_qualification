@@ -100,7 +100,7 @@ void DnsCacheImplRcu<Mx_>::cleanup_if_needed(HashMap& map) const {
 }
 
 template class DnsCacheImplRcu<std::mutex>;
-template class DnsCacheImplRcu<PriorityMutex<>>;
+template class DnsCacheImplRcu<PriorityMutex>;
 
 
 template<typename Mx_>
@@ -135,7 +135,7 @@ std::string DnsCacheImplLRU<Mx_>::resolve(const std::string& name) {
 }
 
 template class DnsCacheImplLRU<std::mutex>;
-template class DnsCacheImplLRU<PriorityMutex<>>;
+template class DnsCacheImplLRU<PriorityMutex>;
 
 
 }// namespace nut::aux

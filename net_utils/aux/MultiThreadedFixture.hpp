@@ -3,10 +3,10 @@
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
-#include <mutex>
 #include <thread>
 #include <vector>
 
+#include <net_utils/ConcurrencyUtils.hpp>
 #include <net_utils/utils.hpp>
 
 
@@ -15,57 +15,51 @@ namespace nut::aux {
 
 class MultiThreadedFixture {
 public:
-  virtual ~MultiThreadedFixture() = default;
+  virtual ~MultiThreadedFixture() {
+    reset();
+  }
+
+
+  template<typename Payload, typename... PArgs>
+  std::shared_ptr<Payload> emplace_worker(PArgs&&... pargs) {
+    auto const pp = std::make_shared<Payload>(std::forward<PArgs>(pargs)...);
+    nodes_.emplace_back(INVOKER_AS_LAMBDA(runner, this), pp);
+    return pp;
+  }
+
+
+  template<typename Fn, typename PostFn>
+  auto emplace_worker(std::size_t iters, Fn&& fn, PostFn&& post) {
+    struct Payload final {
+      Fn          fn;
+      PostFn      post;
+      std::size_t iterations;
+    };
+    return emplace_worker<Payload>(Payload{std::forward<Fn>(fn), std::forward<PostFn>(post), iters});
+  }
 
 
   auto start() {
-    iter_counter_.store(0, std::memory_order_release);
     pre_start();
-    assert(!run_);
-    run_ = true;
-    cv_.notify_one();
-    return finally([this] {
-      stop();
-    });
+    quit_flag_.store(false, std::memory_order_relaxed);
+    barrier_.reset(nodes_.size());
+    barrier_.consumers_run();
+    return finally(WRAP_IN_LAMBDA(stop(), this));
   }
-
-
-  template<typename Fn>
-  void emplace_worker(std::size_t iters, Fn&& fn) {
-    assert(iters > 0);
-    threads_.emplace_back(
-      [iters, this](auto fn) {
-        {
-          // wait start
-          std::unique_lock lk{mx_};
-          cv_.wait(lk, [this]() -> bool { return run_; });
-        }
-        cv_.notify_one();
-
-        for (std::size_t i = 0; i < iters; ++i) {
-          fn(i);
-          iter_counter_.fetch_add(1, std::memory_order_relaxed);
-        }
-      },
-      std::forward<Fn>(fn));
-  }
-
-
-  [[nodiscard]] std::size_t iter_counter() const {
-    return iter_counter_.load(std::memory_order_acquire);
-  }
-
 
 private:
-  void stop() {
-    assert(!!run_);
-    for (auto& thread : threads_) {
-      if (thread.joinable()) {
-        thread.join();
-      }
+  template<typename PayloadPtr>
+  void runner(PayloadPtr payload) {
+    auto const lk = barrier_.consumer_wait();
+    for (std::size_t i = 0; i < payload->iterations; ++i) {
+      payload->fn(i);
+      payload->post();
     }
-    threads_.clear();
-    run_ = false;
+  }
+
+
+  void stop() {
+    barrier_.producer_wait();
     post_stop();
   }
 
@@ -78,12 +72,28 @@ private:
   }
 
 
+  void reset() {
+    quit_flag_.store(true, std::memory_order_relaxed);
+    barrier_.producer_wait();
+    for (auto& thread : nodes_) {
+      if (thread.joinable()) {
+        thread.join();
+      }
+    }
+    nodes_.clear();
+  }
+
+public:
+  enum class WorkerStage : std::uint8_t {
+    idle,
+    run,
+    exit,
+  };
+
 private:
-  std::vector<std::thread> threads_;
-  std::mutex               mx_;
-  std::condition_variable  cv_;
-  std::atomic<std::size_t> iter_counter_;
-  std::atomic<bool>        run_ = false;
+  std::vector<std::thread> nodes_;
+  CrossBarrier             barrier_;
+  std::atomic<bool>        quit_flag_ = true;
 };
 
 

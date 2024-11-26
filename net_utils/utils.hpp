@@ -1,7 +1,24 @@
 #pragma once
 
 #include <tuple>
+#include <type_traits>
 #include <utility>
+
+
+namespace nut {
+
+
+template<class T>
+struct remove_cvref {
+  using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
+
+
+template<class T>
+using remove_cvref_t = typename remove_cvref<T>::type;
+
+
+}// namespace nut
 
 
 #define INVOKER_AS_LAMBDA(fn, ...) [__VA_ARGS__](auto&&... args) constexpr noexcept(noexcept(fn(std::forward<decltype(args)>(args)...))) -> decltype(auto) { \
@@ -9,22 +26,46 @@
 }
 
 
-#ifdef NUT_CXX_GNU_L_11
-  #define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) constexpr -> decltype(auto) { \
-    return std::forward<decltype(arg)>(arg) mem;                                          \
-  }
-#else
-  #define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) noexcept(noexcept(std::forward<decltype(arg)>(arg) mem)) -> decltype(auto) { \
-    return std::forward<decltype(arg)>(arg) mem;                                                                                         \
-  }
-#endif
-
-
-#define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> decltype(auto) { \
-  do {                                                                                                            \
-    expr;                                                                                                         \
-  } while (false);                                                                                                \
+#define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) noexcept(noexcept(std::declval<nut::remove_cvref_t<std::remove_pointer_t<decltype(arg)>>>().mem)) -> decltype(auto) { \
+  if constexpr (std::is_pointer_v<decltype(arg)>) {                                                                                                                             \
+    return std::forward<decltype(arg)>(arg)->mem;                                                                                                                               \
+  } else {                                                                                                                                                                      \
+    return std::forward<decltype(arg)>(arg).mem;                                                                                                                                \
+  }                                                                                                                                                                             \
 }
+
+#ifdef NUT_CXX_GNU_L_11
+
+  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr -> decltype(auto) { \
+    do {                                                                                   \
+      expr;                                                                                \
+    } while (false);                                                                       \
+  }
+
+
+  #define WRAP_IN_LAMBDA_R(expr, ...) [__VA_ARGS__](auto&&...) constexpr -> decltype(auto) { \
+    do {                                                                                     \
+      return expr;                                                                           \
+    } while (false);                                                                         \
+  }
+
+#else
+
+
+  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> decltype(auto) { \
+    do {                                                                                                            \
+      expr;                                                                                                         \
+    } while (false);                                                                                                \
+  }
+
+
+  #define WRAP_IN_LAMBDA_R(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> decltype(auto) { \
+    do {                                                                                                              \
+      return expr;                                                                                                    \
+    } while (false);                                                                                                  \
+  }
+
+#endif
 
 
 namespace nut {
@@ -76,14 +117,42 @@ constexpr auto bind_back(Fn&& fn, Args&&... args) noexcept {
 }
 
 
+class IterativeAverage final {
+public:
+  IterativeAverage(double init) noexcept
+      : avr_{init} {
+  }
+
+
+  double add(double value) noexcept {
+    return avr_ += (value - avr_) / ++count_;
+  }
+
+
+  double operator()(double value) noexcept {
+    return add(value);
+  }
+
+
+  [[nodiscard]] std::size_t count() const {
+    return count_;
+  }
+
+
+  [[nodiscard]] double average() const {
+    return avr_;
+  }
+
+
+  void reset() noexcept {
+    avr_   = 0;
+    count_ = 0;
+  }
+
+private:
+  double      avr_   = 0;
+  std::size_t count_ = 0;
+};
+
+
 }// namespace nut
-
-
-#ifdef NUT_ARCH_X86
-// https://stackoverflow.com/questions/58424276/why-can-mm-pause-significantly-improve-performance#comment103190748_58424276
-  #define thread_pause() asm volatile("pause")
-
-#else
-  #error "thread_pause for this platform not implemented"
-
-#endif

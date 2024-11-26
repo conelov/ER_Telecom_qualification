@@ -46,7 +46,7 @@ private:
 };
 
 extern template class DnsCacheImplRcu<std::mutex>;
-extern template class DnsCacheImplRcu<PriorityMutex<>>;
+extern template class DnsCacheImplRcu<PriorityMutex>;
 
 
 template<typename Mx_>
@@ -65,7 +65,7 @@ private:
 
 
 extern template class DnsCacheImplLRU<std::mutex>;
-extern template class DnsCacheImplLRU<PriorityMutex<>>;
+extern template class DnsCacheImplLRU<PriorityMutex>;
 
 
 }// namespace aux
@@ -85,13 +85,13 @@ using DnsCacheImpl =
     aux::DnsCacheImplRcu<std::mutex>,
     //
     std::conditional_t<type == DnsCacheImplType::rcu_priority_mutex,
-      aux::DnsCacheImplRcu<PriorityMutex<>>,
+      aux::DnsCacheImplRcu<PriorityMutex>,
       //
       std::conditional_t<type == DnsCacheImplType::lru_std_mx,
         aux::DnsCacheImplLRU<std::mutex>,
         //
         /// type == DnsCacheImplType::lru_priority_mutex
-        aux::DnsCacheImplLRU<PriorityMutex<>>
+        aux::DnsCacheImplLRU<PriorityMutex>
         //
         >>>;
 

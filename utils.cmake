@@ -102,14 +102,19 @@ endfunction()
 
 function(aux_common target)
   target_common(${name})
+  list(APPEND sources
+    MultiThreadedFixture.hpp
+    MultiThreadedRWFixture.hpp
+    MultiThreadedRWValuedFixture.hpp
+    PriorityMutexFixture.hpp
+    RcuStorageFixture.hpp
+    DnsCacheFixture.hpp
+    san_report_breakpoints.cpp
+    IterationRate.hpp
+  )
+  list(TRANSFORM sources PREPEND "${PROJECT_SOURCE_DIR}/net_utils/aux/")
   target_sources(${target} PRIVATE
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/MultiThreadedRWValuedFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/PriorityMutexFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/RcuStorageFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/DnsCacheFixture.hpp"
-    "${PROJECT_SOURCE_DIR}/net_utils/aux/san_report_breakpoints.cpp"
+    "${sources}"
   )
 
   cpu_count(c)

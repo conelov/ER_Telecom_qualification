@@ -36,4 +36,4 @@ void generate_dependent_args(benchmark::internal::Benchmark* b) {
 
 
 BENCH_T(PriorityMutexBench, std_mx, std::shared_mutex);
-BENCH_T(PriorityMutexBench, priority_mutex, PriorityMutex<>);
+BENCH_T(PriorityMutexBench, priority_mutex, PriorityMutex);
