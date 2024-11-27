@@ -41,7 +41,7 @@ DnsCacheImplRcu<Mx_>::DnsCacheImplRcu(std::size_t cache_size)
 
 template<typename Mx_>
 DnsCacheImplRcu<Mx_>::DnsCacheImplRcu()
-    : DnsCacheImplRcu{DNS_CACHE_REC_LIMIT} {
+    : DnsCacheImplRcu{NET_UTILS_DNS_CACHE_REC_LIMIT} {
 }
 
 

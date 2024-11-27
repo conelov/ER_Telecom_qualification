@@ -34,12 +34,12 @@ using remove_cvref_t = typename remove_cvref<T>::type;
   }                                                                                                                                                                             \
 }
 
-#ifdef NUT_CXX_GNU_L_11
+#ifdef NET_UTILS_CXX_GNU_L_11
 
-  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr -> decltype(auto) { \
-    do {                                                                                   \
-      expr;                                                                                \
-    } while (false);                                                                       \
+  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr -> void { \
+    do {                                                                         \
+      expr;                                                                      \
+    } while (false);                                                             \
   }
 
 
@@ -52,10 +52,10 @@ using remove_cvref_t = typename remove_cvref<T>::type;
 #else
 
 
-  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> decltype(auto) { \
-    do {                                                                                                            \
-      expr;                                                                                                         \
-    } while (false);                                                                                                \
+  #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> void { \
+    do {                                                                                                  \
+      expr;                                                                                               \
+    } while (false);                                                                                      \
   }
 
 

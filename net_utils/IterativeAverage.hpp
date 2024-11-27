@@ -2,15 +2,18 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <type_traits>
+#include <limits>
 
 
 namespace nut {
 
 
-template<typename T_>
+template<typename T_ = double>
 class IterativeAverage final {
 public:
   using value_type = T_;
+  static_assert(std::is_floating_point_v<value_type>);
 
   struct MinMax final {
     value_type min;
@@ -18,21 +21,21 @@ public:
   };
 
 public:
-  IterativeAverage(value_type init = {}) noexcept {
-    reset(init);
+  IterativeAverage() noexcept {
+    reset();
   }
 
 
-  value_type add(value_type const value) noexcept {
-    minmax_.min = std::min(minmax_.min, value);
-    minmax_.max = std::max(minmax_.max, value);
-    return avr_ += (value - avr_) / ++count_;
+  IterativeAverage& add(value_type const in) noexcept {
+    minmax_.min = std::min(minmax_.min, in);
+    minmax_.max = std::max(minmax_.max, in);
+    avr_ += (in - avr_) / ++count_;
+    return *this;
   }
 
 
   IterativeAverage& operator+=(value_type value) noexcept {
-    add(value);
-    return *this;
+    return add(value);
   }
 
 
@@ -42,6 +45,7 @@ public:
 
 
   [[nodiscard]] value_type average() const noexcept {
+    assert(count_ > 0);
     return avr_;
   }
 
@@ -51,9 +55,11 @@ public:
   }
 
 
-  void reset(value_type init = {}) noexcept {
-    minmax_.min = minmax_.max = avr_ = init;
-    count_                           = 0;
+  void reset() noexcept {
+    avr_        = 0;
+    count_      = 0;
+    minmax_.min = std::numeric_limits<value_type>::max();
+    minmax_.max = std::numeric_limits<value_type>::min();
   }
 
 
@@ -62,7 +68,7 @@ public:
   }
 
 private:
-  value_type      avr_;
+  value_type  avr_;
   std::size_t count_;
   MinMax      minmax_;
 };

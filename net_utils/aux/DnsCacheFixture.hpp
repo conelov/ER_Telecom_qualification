@@ -17,7 +17,7 @@ class DnsCacheFixture : public MultiThreadedRWValuedFixture<DnsCacheImpl<type>> 
 public:
   void bind(std::size_t cache_size) {
     using Base       = MultiThreadedRWValuedFixture<DnsCacheImpl<type>>;
-    this->value_ctor = MEM_FN_LAMBDA(.emplace(cache_size), cache_size);
+    this->value_ctor = MEM_FN_LAMBDA(emplace(cache_size), cache_size);
 
     auto str_gen = [this](std::size_t idx, std::size_t i) {
       return std::to_string(idx * this->writers + i);
