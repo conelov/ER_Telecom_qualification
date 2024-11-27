@@ -1,11 +1,11 @@
-include("${PROJECT_SOURCE_DIR}/utils.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/utils.cmake")
 
 
 function(bench_common out_var suffix)
   auto_fetch(
     NAME benchmark
     GITHUB_REPOSITORY google/benchmark
-    VERSION ${GBENCH_VERSION}
+    VERSION ${${PROJECT_NAME_UP_CASE}_GBENCH_VERSION}
     OPTIONS "BENCHMARK_ENABLE_TESTING OFF"
   )
 
@@ -14,7 +14,6 @@ function(bench_common out_var suffix)
   target_common(${name})
   aux_common(${name})
   collect_targets(${name} bench)
-
 
   target_sources(${name} PRIVATE
     main.cpp
@@ -30,7 +29,7 @@ endfunction()
 
 
 macro(bench_once name)
-  if(GBENCH_SAN)
+  if(${PROJECT_NAME_UP_CASE}_RESEARCH_GBENCH_SAN)
     san_common(ts ${name} bench_common)
   else()
     bench_common(ts ${name})
@@ -40,7 +39,7 @@ macro(bench_once name)
       ${name}.cpp
     )
     target_link_libraries(${i} PRIVATE
-      ER_Telecom_net_utils
+      ${PROJECT_NAME}_lib
     )
   endforeach()
 endmacro()

@@ -1,4 +1,4 @@
-include("${PROJECT_SOURCE_DIR}/utils.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/utils.cmake")
 
 
 function(test_common out_var suffix)
@@ -6,7 +6,7 @@ function(test_common out_var suffix)
   auto_fetch(
     NAME googletest
     GITHUB_REPOSITORY google/googletest
-    VERSION ${GTEST_VERSION}
+    VERSION ${${PROJECT_NAME_UP_CASE}_GTEST_VERSION}
     OPTIONS "INSTALL_GTEST OFF"
   )
 
@@ -47,6 +47,6 @@ foreach(i IN LISTS tests)
     DnsCache.cpp
   )
   target_link_libraries(${i} PRIVATE
-    ER_Telecom_net_utils
+    ${PROJECT_NAME}_lib
   )
 endforeach()

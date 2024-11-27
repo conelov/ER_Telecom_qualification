@@ -85,11 +85,11 @@ function(target_common target)
   )
   target_compile_definitions(${target} PUBLIC
     $<$<BOOL:${BUILD_TESTING}>:NUT_TESTING>
-    NUT_CXX_${CMAKE_CXX_COMPILER_ID}
+    CXX_COMPILER_ID_${CMAKE_CXX_COMPILER_ID}
   )
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")
     target_compile_definitions(${target} PUBLIC
-      NUT_CXX_GNU_L_11
+      ${PROJECT_NAME_UP_CASE}_CXX_GNU_L_11
     )
   endif()
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
@@ -186,7 +186,7 @@ function(san_common out_var suffix fn_gen)
     )
   endmacro()
 
-  foreach(i IN LISTS TESTS_SANITIZE)
+  foreach(i IN LISTS ${PROJECT_NAME_UP_CASE}_SANITIZERS)
     if("${i}" STREQUAL "address")
       cmake_language(CALL ${fn_gen} name "${suffix}-asan")
       asan()

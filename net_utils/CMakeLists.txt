@@ -1,4 +1,4 @@
-set(name ER_Telecom_net_utils)
+set(name ${PROJECT_NAME}_lib)
 
 add_library(${name}
   utils.hpp
@@ -13,12 +13,11 @@ add_library(${name}
   DnsCacheImpl.hpp src/DnsCacheImpl.cpp
 )
 
-include("${PROJECT_SOURCE_DIR}/utils.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/utils.cmake")
 target_common(${name})
 
 target_compile_definitions(${name} PUBLIC
-  DNS_CACHE_REC_LIMIT=${DNS_CACHE_REC_LIMIT}
-  $<$<BOOL:${BUILD_GBENCH}>:BUILD_GBENCH>
+  ${PROJECT_NAME_UP_CASE}_DNS_CACHE_REC_LIMIT=${${PROJECT_NAME_UP_CASE}_DNS_CACHE_REC_LIMIT}
 )
 
 
@@ -26,6 +25,6 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-if(BUILD_GBENCH)
+if(${PROJECT_NAME_UP_CASE}_RESEARCH)
   add_subdirectory(bench)
 endif()
