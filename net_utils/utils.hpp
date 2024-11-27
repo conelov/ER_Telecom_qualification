@@ -117,42 +117,4 @@ constexpr auto bind_back(Fn&& fn, Args&&... args) noexcept {
 }
 
 
-class IterativeAverage final {
-public:
-  IterativeAverage(double init) noexcept
-      : avr_{init} {
-  }
-
-
-  double add(double value) noexcept {
-    return avr_ += (value - avr_) / ++count_;
-  }
-
-
-  double operator()(double value) noexcept {
-    return add(value);
-  }
-
-
-  [[nodiscard]] std::size_t count() const {
-    return count_;
-  }
-
-
-  [[nodiscard]] double average() const {
-    return avr_;
-  }
-
-
-  void reset() noexcept {
-    avr_   = 0;
-    count_ = 0;
-  }
-
-private:
-  double      avr_   = 0;
-  std::size_t count_ = 0;
-};
-
-
 }// namespace nut

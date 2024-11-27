@@ -2,58 +2,101 @@
 
 #include <chrono>
 
-#include <net_utils/utils.hpp>
+#include <net_utils/IterativeAverage.hpp>
 
 
 namespace nut::aux {
 
 
+template<typename Ratio_ = std::nano>
 class IterationRate final {
 public:
-  using Clock = std::chrono::steady_clock;
-
-private:
-  static std::int64_t time() noexcept {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch()).count();
-  }
+  using Clock    = std::chrono::steady_clock;
+  using Ratio    = Ratio_;
+  using Rep      = double;
+  using Duration = std::chrono::duration<Rep, Ratio>;
+  using Average  = IterativeAverage<Duration>;
 
 public:
-  [[nodiscard]] IterativeAverage current() const noexcept {
+  std::size_t resolution = 1;
+
+public:
+  IterationRate() {// NOLINT(*-pro-type-member-init)
+    reset();
+  }
+
+
+  [[nodiscard]] Average const& current() const noexcept {
     return ir_;
   }
 
 
-  [[nodiscard]] double operator*() const noexcept {
+  [[nodiscard]] Average const& operator*() const noexcept {
+    return current();
+  }
+
+
+  [[nodiscard]] Average const* operator->() const noexcept {
+    return &ir_;
+  }
+
+
+  [[nodiscard]] operator Duration() const noexcept {
     return ir_.average();
   }
 
 
-  [[nodiscard]] operator double() const noexcept {
-    return **this;
-  }
-
-
-  double cut() noexcept {
-    return ir_.add(time());
-  }
-
-
   void operator++() noexcept {
-    cut();
+    iterate();
   }
 
 
   void operator++(int) noexcept {
-    cut();
+    iterate();
+  }
+
+
+  void iterate() noexcept {
+    if (++iteration_counter_ < resolution) {
+      return;
+    }
+    cut(iteration_counter_);
+    iteration_counter_ = 0;
+  }
+
+
+  void cut() noexcept {
+    cut(iteration_counter_);
   }
 
 
   void reset() noexcept {
-    ir_ = time();
+    ir_.reset();
+    time_prev_         = Clock::now();
+    iteration_counter_ = 0;
+  }
+
+
+  Average release() noexcept {
+    auto const out = ir_;
+    reset();
+    return out;
   }
 
 private:
-  IterativeAverage ir_ = time();
+  void cut(std::size_t iters) {
+    if (iters == 0) {
+      return;
+    }
+    auto const start = std::exchange(time_prev_, Clock::now());
+    ir_ += static_cast<Rep>(std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(time_prev_ - start).count())
+      / static_cast<Rep>(iters);
+  }
+
+private:
+  Average           ir_;
+  Clock::time_point time_prev_;
+  std::size_t       iteration_counter_;
 };
 
 

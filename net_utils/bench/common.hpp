@@ -8,7 +8,7 @@
 #define BENCH_T(fixture, name, type)                                           \
   BENCHMARK_TEMPLATE_DEFINE_F(fixture, name, type)(benchmark::State & state) { \
     for (auto _ : state) {                                                     \
-      start();                                                                 \
+      iteration();                                                             \
     }                                                                          \
   }                                                                            \
   BENCHMARK_REGISTER_F(fixture, name)                                          \
@@ -53,8 +53,8 @@ public:
 
 
   void post_stop() override {
-    state_->counters["r_rate"] = *this->read_rate;
-    state_->counters["w_rate"] = *this->write_rate;
+    // state_->counters["r_rate"] = *this->read_rate;
+    // state_->counters["w_rate"] = *this->write_rate;
   }
 
 private:

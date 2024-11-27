@@ -11,14 +11,27 @@
 namespace nut::aux {
 
 
-class MultiThreadedRWFixture : public MultiThreadedFixture {
+struct MultiThreadedRWFixtureBase {
+  struct Payload final {
+    IterationRate rate;
+    std::size_t   iterations;
+
+
+    void post() noexcept {
+      ++rate;
+    }
+  };
+};
+
+
+class MultiThreadedRWFixture
+    : public MultiThreadedFixture<MultiThreadedRWFixtureBase::Payload>
+    , public MultiThreadedRWFixtureBase {
 public:
-  IterationRate read_rate;
-  IterationRate write_rate;
-  std::size_t   readers     = 0;
-  std::size_t   writers     = 0;
-  std::size_t   read_iters  = 0;
-  std::size_t   write_iters = 0;
+  std::size_t readers     = 0;
+  std::size_t writers     = 0;
+  std::size_t read_iters  = 0;
+  std::size_t write_iters = 0;
 
 public:
   void set_rw_relation(float rw_relation, std::size_t ths = NUT_CPU_COUNT) {
@@ -31,19 +44,20 @@ public:
 
   template<typename R, typename W>
   void bind(R&& r, W&& w) {
+    MultiThreadedFixture::bind();
+
     assert(readers != 0);
     assert(writers != 0);
     assert(read_iters != 0);
     assert(write_iters != 0);
-    read_rate.reset();
-    write_rate.reset();
+
 
     for (std::size_t i = 0; i < readers; ++i) {
-      emplace_worker(read_iters, bind_front(r, i), WRAP_IN_LAMBDA(++read_rate, this));
+      emplace_worker(bind_front(r, i), Payload{.iterations = read_iters});
     }
 
     for (std::size_t i = 0; i < writers; ++i) {
-      emplace_worker(write_iters, bind_front(w, i), WRAP_IN_LAMBDA(++write_rate, this));
+      emplace_worker(bind_front(w, i), Payload{.iterations = write_iters});
     }
   }
 };

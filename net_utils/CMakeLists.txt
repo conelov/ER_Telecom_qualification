@@ -2,6 +2,7 @@ set(name ER_Telecom_net_utils)
 
 add_library(${name}
   utils.hpp
+  IterativeAverage.hpp
   Singleton.hpp
   ConcurrencyUtils.hpp
   LruStorage.hpp

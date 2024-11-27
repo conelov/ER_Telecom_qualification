@@ -1,8 +1,6 @@
 #pragma once
 
-#include <atomic>
 #include <cassert>
-#include <condition_variable>
 #include <thread>
 #include <vector>
 
@@ -12,54 +10,92 @@
 
 namespace nut::aux {
 
+template<typename Payload>
+class MultiThreadedFixture;
 
-class MultiThreadedFixture {
+
+template<typename Derived_>
+class MultiThreadedFixturePayloadMixin {
 public:
-  virtual ~MultiThreadedFixture() {
-    reset();
+  std::size_t   iterations;
+  IterationRate rate;
+
+  void pre_run() noexcept {
+    rate.reset();
+  }
+
+  void iteration_post() noexcept {
+    ++rate;
   }
 
 
-  template<typename Payload, typename... PArgs>
-  std::shared_ptr<Payload> emplace_worker(PArgs&&... pargs) {
-    auto const pp = std::make_shared<Payload>(std::forward<PArgs>(pargs)...);
-    nodes_.emplace_back(INVOKER_AS_LAMBDA(runner, this), pp);
+private:
+  Derived_& cast() noexcept {
+    return static_cast<Derived_&>(*this);
+  }
+};
+
+
+template<typename Payload_>
+class MultiThreadedFixture {
+public:
+  using PayloadPtr = std::shared_ptr<Payload_ const>;
+
+  struct Node final {
+    std::thread thread;
+    PayloadPtr  payload;
+  };
+
+  using NodesArray = std::vector<Node>;
+
+public:
+  virtual ~MultiThreadedFixture() {
+    stop();
+  }
+
+
+  void bind() {
+    stop();
+  }
+
+
+  template<typename Fn, typename... PArgs>
+  PayloadPtr emplace_worker(Fn&& fn, PArgs&&... pargs) {
+    assert(!pc_.producer.is_running());
+    auto pp = std::make_shared<Payload_>(std::forward<PArgs>(pargs)...);
+    nodes_.emplace_back(
+      Node{
+        .thread{std::thread{INVOKER_AS_LAMBDA(runner, this), std::forward<Fn>(fn), pp}},
+        .payload = pp,
+      });
     return pp;
   }
 
 
-  template<typename Fn, typename PostFn>
-  auto emplace_worker(std::size_t iters, Fn&& fn, PostFn&& post) {
-    struct Payload final {
-      Fn          fn;
-      PostFn      post;
-      std::size_t iterations;
-    };
-    return emplace_worker<Payload>(Payload{std::forward<Fn>(fn), std::forward<PostFn>(post), iters});
+  void iteration() {
+    pre_start();
+    pc_.producer.run(nodes_.size());
+    pc_.producer.wait();
   }
 
 
-  auto start() {
-    pre_start();
-    quit_flag_.store(false, std::memory_order_relaxed);
-    barrier_.reset(nodes_.size());
-    barrier_.consumers_run();
-    return finally(WRAP_IN_LAMBDA(stop(), this));
+  [[nodiscard]] NodesArray const& nodes() const noexcept {
+    return nodes_;
   }
 
 private:
-  template<typename PayloadPtr>
-  void runner(PayloadPtr payload) {
-    auto const lk = barrier_.consumer_wait();
-    for (std::size_t i = 0; i < payload->iterations; ++i) {
-      payload->fn(i);
-      payload->post();
-    }
+  template<typename Fn, typename PayloadPtr>
+  void runner(Fn&& fn, PayloadPtr payload) {
+    pc_.consumer.execute([this, &fn, payload]() {
+      for (std::size_t i = 0; i < payload->iterations; ++i) {
+        fn(i);
+        payload->post();
+      }
+    });
   }
 
 
-  void stop() {
-    barrier_.producer_wait();
+  void end_iteration() {
     post_stop();
   }
 
@@ -72,10 +108,9 @@ private:
   }
 
 
-  void reset() {
-    quit_flag_.store(true, std::memory_order_relaxed);
-    barrier_.producer_wait();
-    for (auto& thread : nodes_) {
+  void stop() {
+    pc_.producer.quit();
+    for (auto& [thread, payload] : nodes_) {
       if (thread.joinable()) {
         thread.join();
       }
@@ -83,17 +118,9 @@ private:
     nodes_.clear();
   }
 
-public:
-  enum class WorkerStage : std::uint8_t {
-    idle,
-    run,
-    exit,
-  };
-
 private:
-  std::vector<std::thread> nodes_;
-  CrossBarrier             barrier_;
-  std::atomic<bool>        quit_flag_ = true;
+  NodesArray     nodes_;
+  ProduceConsume pc_;
 };
 
 
