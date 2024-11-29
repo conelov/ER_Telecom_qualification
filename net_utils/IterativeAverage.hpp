@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <type_traits>
 #include <limits>
+#include <type_traits>
 
 
 namespace nut {
@@ -13,7 +13,6 @@ template<typename T_ = double>
 class IterativeAverage final {
 public:
   using value_type = T_;
-  static_assert(std::is_floating_point_v<value_type>);
 
   struct MinMax final {
     value_type min;
@@ -21,7 +20,7 @@ public:
   };
 
 public:
-  IterativeAverage() noexcept {
+  IterativeAverage() noexcept {// NOLINT(*-pro-type-member-init)
     reset();
   }
 
@@ -45,7 +44,7 @@ public:
 
 
   [[nodiscard]] value_type average() const noexcept {
-    assert(count_ > 0);
+    assert(!empty());
     return avr_;
   }
 
@@ -55,8 +54,13 @@ public:
   }
 
 
+  [[nodiscard]] bool empty() const noexcept {
+    return count_ == 0;
+  }
+
+
   void reset() noexcept {
-    avr_        = 0;
+    avr_        = {};
     count_      = 0;
     minmax_.min = std::numeric_limits<value_type>::max();
     minmax_.max = std::numeric_limits<value_type>::min();

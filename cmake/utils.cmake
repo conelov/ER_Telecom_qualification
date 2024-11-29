@@ -103,6 +103,7 @@ endfunction()
 function(aux_common target)
   target_common(${name})
   list(APPEND sources
+    IterationRate.hpp
     MultiThreadedFixture.hpp
     MultiThreadedRWFixture.hpp
     MultiThreadedRWValuedFixture.hpp
@@ -110,16 +111,15 @@ function(aux_common target)
     RcuStorageFixture.hpp
     DnsCacheFixture.hpp
     san_report_breakpoints.cpp
-    IterationRate.hpp
   )
   list(TRANSFORM sources PREPEND "${PROJECT_SOURCE_DIR}/net_utils/aux/")
   target_sources(${target} PRIVATE
-    "${sources}"
+    ${sources}
   )
 
   cpu_count(c)
   target_compile_definitions(${name} PRIVATE
-    NUT_CPU_COUNT=${c}
+    ${PROJECT_NAME_UP_CASE}_CPU_COUNT=${c}
   )
 endfunction()
 

@@ -57,7 +57,7 @@ protected:
 protected:
   void bind() {
     using Base       = MultiThreadedRWValuedFixture<RcuLruStorageFixtureType<Mx_>>;
-    this->value_ctor = MEM_FN_LAMBDA(.emplace(cache_size), this);
+    this->value_ctor = MEM_FN_LAMBDA(emplace(cache_size), this);
 
     Base::bind(
       [this](std::size_t idx, auto...) {

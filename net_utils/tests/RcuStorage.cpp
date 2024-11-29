@@ -22,8 +22,6 @@ protected:
     this->read_iters  = 1'000'000;
     this->write_iters = 100'000;
     this->set_rw_relation(1. / 2);
-    this->readers *= 2;
-    this->writers = this->writers * 2;
     if constexpr (std::is_base_of_v<aux::RcuLruStorageFixtureBaseTag, std::remove_pointer_t<decltype(this)>>) {
       this->cache_size = this->write_iters;
     }
@@ -34,16 +32,14 @@ protected:
 
 using Storage = ::testing::Types<
   aux::RcuLruStorageFixture<std::shared_mutex>,
-  aux::RcuLruStorageFixture<PriorityMutex<>>,
+  aux::RcuLruStorageFixture<PriorityMutex>,
   aux::RcuStorageFixture<std::shared_mutex>,
-  aux::RcuStorageFixture<PriorityMutex<>>>;
+  aux::RcuStorageFixture<PriorityMutex>>;
 TYPED_TEST_SUITE(RcuStorageTest, Storage);
 
 
 TYPED_TEST(RcuStorageTest, high_load) {
-  ASSERT_NO_THROW(this->start());
-
-  EXPECT_EQ(this->iter_counter(), this->writers * this->write_iters + this->readers * this->read_iters);
+  ASSERT_NO_THROW(this->iteration());
 
   if constexpr (std::is_base_of_v<aux::RcuStorageFixtureBaseTag, std::remove_pointer_t<decltype(this)>>) {
     auto const array_ptr = this->value->load();

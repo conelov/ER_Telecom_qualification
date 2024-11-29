@@ -18,31 +18,51 @@ public:
   using Average  = IterativeAverage<Duration>;
 
 public:
-  std::size_t resolution = 1;
+  IterationRate() = default;
 
-public:
-  IterationRate() {// NOLINT(*-pro-type-member-init)
-    reset();
+
+  IterationRate(std::size_t resolution) {// NOLINT(*-pro-type-member-init, *-explicit-constructor)
+    reset(resolution);
   }
 
 
-  [[nodiscard]] Average const& current() const noexcept {
+  [[nodiscard]] std::size_t resolution() const noexcept {
+    return resolution_;
+  }
+
+
+  void set_resolution(std::size_t resolution) noexcept {
+    assert(ir_.empty());
+    resolution_ = resolution;
+  }
+
+
+  Average const& average() const noexcept {
     return ir_;
   }
 
 
-  [[nodiscard]] Average const& operator*() const noexcept {
-    return current();
+  Average const* operator->() const noexcept {
+    return &average();
   }
 
 
-  [[nodiscard]] Average const* operator->() const noexcept {
-    return &ir_;
+  void iterate() noexcept {
+    if (++iteration_counter_ < resolution_) {
+      return;
+    }
+    cut();
   }
 
 
-  [[nodiscard]] operator Duration() const noexcept {
-    return ir_.average();
+  void cut() noexcept {
+    assert(resolution_ > 0 && "not initialized");
+    auto const start = std::exchange(time_prev_, Clock::now());
+    if (iteration_counter_ == 0) {
+      return;
+    }
+    ir_ += (time_prev_ - start) * iteration_counter_ / static_cast<Rep>(resolution_);
+    iteration_counter_ = 0;
   }
 
 
@@ -56,47 +76,23 @@ public:
   }
 
 
-  void iterate() noexcept {
-    if (++iteration_counter_ < resolution) {
-      return;
-    }
-    cut(iteration_counter_);
+  void reset(std::size_t resolution) noexcept {
+    ir_.reset();
+    time_prev_         = Clock::now();
+    resolution_        = resolution;
     iteration_counter_ = 0;
-  }
-
-
-  void cut() noexcept {
-    cut(iteration_counter_);
   }
 
 
   void reset() noexcept {
-    ir_.reset();
-    time_prev_         = Clock::now();
-    iteration_counter_ = 0;
-  }
-
-
-  Average release() noexcept {
-    auto const out = ir_;
-    reset();
-    return out;
-  }
-
-private:
-  void cut(std::size_t iters) {
-    if (iters == 0) {
-      return;
-    }
-    auto const start = std::exchange(time_prev_, Clock::now());
-    ir_ += static_cast<Rep>(std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(time_prev_ - start).count())
-      / static_cast<Rep>(iters);
+    reset(resolution_);
   }
 
 private:
   Average           ir_;
   Clock::time_point time_prev_;
-  std::size_t       iteration_counter_;
+  std::size_t       resolution_        = 0;
+  std::size_t       iteration_counter_ = 0;
 };
 
 

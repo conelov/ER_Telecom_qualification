@@ -12,7 +12,9 @@
     }                                                                          \
   }                                                                            \
   BENCHMARK_REGISTER_F(fixture, name)                                          \
-    ->Apply(generate_dependent_args)
+    ->Apply(generate_dependent_args)                                           \
+    ->Unit(benchmark::kMillisecond)                                            \
+    ->MeasureProcessCPUTime();
 
 
 #define BENCH(fixture, name)                                    \
@@ -22,7 +24,9 @@
     }                                                           \
   }                                                             \
   BENCHMARK_REGISTER_F(fixture, name)                           \
-    ->Apply(generate_dependent_args)
+    ->Apply(generate_dependent_args)                            \
+    ->Unit(benchmark::kMillisecond)                             \
+    ->MeasureProcessCPUTime();
 
 
 namespace nut {
@@ -52,9 +56,21 @@ public:
   }
 
 
-  void post_stop() override {
-    // state_->counters["r_rate"] = *this->read_rate;
-    // state_->counters["w_rate"] = *this->write_rate;
+  void pre_stop() override {
+    if (this->payloads().empty()) {
+      return;
+    }
+    IterativeAverage<std::chrono::duration<double, std::micro>> read_rate;
+    IterativeAverage<std::chrono::duration<double, std::micro>> write_rate;
+    for (auto const& p : this->payloads()) {
+      assert(p->type == aux::MultiThreadedRWFixturePayloadMixin::reader
+        || p->type == aux::MultiThreadedRWFixturePayloadMixin::writer);
+      (p->type == aux::MultiThreadedRWFixturePayloadMixin::reader ? read_rate : write_rate) += p->rate->average();
+    }
+    state_->counters["r_rate_per_µs"]     = read_rate.average().count();
+    state_->counters["r_rate_max_per_µs"] = read_rate.min_max().max.count();
+    state_->counters["w_rate_per_µs"]     = write_rate.average().count();
+    state_->counters["w_rate_max_per_µs"] = write_rate.min_max().max.count();
   }
 
 private:

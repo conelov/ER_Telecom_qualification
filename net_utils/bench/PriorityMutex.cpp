@@ -23,8 +23,8 @@ public:
 
 void generate_dependent_args(benchmark::internal::Benchmark* b) {
   for (auto const rw_rel : rel_range_default) {
-    for (auto const wit : {10'000, 100'000}) {
-      for (auto const rit : {10'000, 100'000}) {
+    for (auto const wit : {10'000}) {
+      for (auto const rit : {10'000}) {
         b->Args({static_cast<std::int64_t>(std::round(rw_rel * rw_rel_multi)), rit, wit});
       }
     }

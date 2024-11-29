@@ -21,8 +21,6 @@ protected:
     this->read_iters = 1'000'000;
     this->write_iters    = 100'000;
     this->set_rw_relation(1. / 2);
-    this->readers *= 2;
-    this->writers = this->writers * 2;
     this->bind();
   }
 };
@@ -33,7 +31,7 @@ TYPED_TEST_SUITE(PriorityMutexTest, Storage);
 
 
 TYPED_TEST(PriorityMutexTest, high_load) {
-  ASSERT_NO_THROW(this->start());
+  ASSERT_NO_THROW(this->iteration());
 
   // EXPECT_EQ(this->iter_counter(), this->writers * this->write_iters + this->readers * this->read_iters);
   EXPECT_THAT(*this->value, testing::ElementsAreArray(std::vector(this->writers, this->write_iters)));

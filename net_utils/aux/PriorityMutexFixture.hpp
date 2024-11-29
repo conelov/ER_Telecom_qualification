@@ -19,6 +19,7 @@ public:
       if (!opt) {
         opt.emplace();
       }
+      opt->clear();
       opt->assign(writers, 0);
     };
 

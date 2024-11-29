@@ -3,6 +3,7 @@
 #include <chrono>
 #include <mutex>
 #include <type_traits>
+#include <string>
 
 #include <net_utils/LruStorage.hpp>
 #include <net_utils/PriorityMutex.hpp>

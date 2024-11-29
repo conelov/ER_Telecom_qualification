@@ -20,7 +20,7 @@ public:
   ValueCtor value_ctor;
 
 protected:
-  void pre_start() override {
+  void begin_iteration() override {
     value_ctor(value);
   }
 

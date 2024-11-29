@@ -30,8 +30,6 @@ protected:
     this->read_iters  = 100'000;
     this->write_iters = 10'000;
     this->set_rw_relation(1. / 2);
-    this->readers *= 2;
-    this->writers = this->writers * 2;
     this->bind(1000);
   }
 };
@@ -46,7 +44,7 @@ TYPED_TEST_SUITE(DnsCacheTest, Storage);
 
 
 TYPED_TEST(DnsCacheTest, high_load) {
-  ASSERT_NO_THROW(this->start());
+  ASSERT_NO_THROW(this->iteration());
 }
 
 

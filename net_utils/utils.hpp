@@ -25,16 +25,16 @@ using remove_cvref_t = typename remove_cvref<T>::type;
   return fn(std::forward<decltype(args)>(args)...);                                                                                                          \
 }
 
-
-#define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) noexcept(noexcept(std::declval<nut::remove_cvref_t<std::remove_pointer_t<decltype(arg)>>>().mem)) -> decltype(auto) { \
-  if constexpr (std::is_pointer_v<decltype(arg)>) {                                                                                                                             \
-    return std::forward<decltype(arg)>(arg)->mem;                                                                                                                               \
-  } else {                                                                                                                                                                      \
-    return std::forward<decltype(arg)>(arg).mem;                                                                                                                                \
-  }                                                                                                                                                                             \
-}
-
 #ifdef NET_UTILS_CXX_GNU_L_11
+
+
+  #define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) -> decltype(auto) { \
+    if constexpr (std::is_pointer_v<decltype(arg)>) {                           \
+      return std::forward<decltype(arg)>(arg)->mem;                             \
+    } else {                                                                    \
+      return std::forward<decltype(arg)>(arg).mem;                              \
+    }                                                                           \
+  }
 
   #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr -> void { \
     do {                                                                         \
@@ -50,6 +50,15 @@ using remove_cvref_t = typename remove_cvref<T>::type;
   }
 
 #else
+
+
+  #define MEM_FN_LAMBDA(mem, ...) [__VA_ARGS__](auto&& arg) noexcept(noexcept(std::declval<nut::remove_cvref_t<std::remove_pointer_t<decltype(arg)>>>().mem)) -> decltype(auto) { \
+    if constexpr (std::is_pointer_v<decltype(arg)>) {                                                                                                                             \
+      return std::forward<decltype(arg)>(arg)->mem;                                                                                                                               \
+    } else {                                                                                                                                                                      \
+      return std::forward<decltype(arg)>(arg).mem;                                                                                                                                \
+    }                                                                                                                                                                             \
+  }
 
 
   #define WRAP_IN_LAMBDA(expr, ...) [__VA_ARGS__](auto&&...) constexpr noexcept(noexcept(expr)) -> void { \
@@ -87,10 +96,15 @@ template<typename F>
 
     constexpr Sentry(Sentry&& in) noexcept
         : f_{std::move(in.f_)} {
-      in.spent_ = true;
+      in.discard();
     }
 
     constexpr Sentry(Sentry const&) noexcept = delete;
+
+    void discard() noexcept {
+      assert(!spent_);
+      spent_ = true;
+    }
 
   private:
     F    f_;
@@ -102,19 +116,50 @@ template<typename F>
 
 
 template<typename Fn, typename... Args>
-constexpr auto bind_front(Fn&& fn, Args&&... args) noexcept {
+constexpr decltype(auto) bind_front(Fn&& fn, Args&&... args) noexcept {
   return [fn = std::make_tuple(std::forward<Fn>(fn)), cap = std::make_tuple(std::forward<Args>(args)...)](auto&&... args) mutable {
-    return std::apply(std::get<0>(fn), std::tuple_cat(std::forward<decltype(cap)>(cap), std::make_tuple(std::forward<decltype(args)>(args)...)));
+    return std::apply(std::get<0>(fn), std::tuple_cat(cap, std::make_tuple(std::forward<decltype(args)>(args)...)));
   };
 }
 
 
 template<typename Fn, typename... Args>
-constexpr auto bind_back(Fn&& fn, Args&&... args) noexcept {
-  return [fn = std::make_tuple(std::forward<Fn>(fn)), cap = std::make_tuple(std::forward<Args>(args)...)](auto&&... args) mutable {
-    return std::apply(std::get<0>(fn), std::tuple_cat(std::make_tuple(std::forward<decltype(args)>(args)...), std::forward<decltype(cap)>(cap)));
+constexpr decltype(auto) bind_front_once(Fn&& fn, Args&&... args) noexcept {
+  return [fn = std::make_tuple(std::forward<Fn>(fn)), cap = std::make_tuple(std::forward<Args>(args)...), called = false](auto&&... args) mutable {
+    if (called) {
+      throw std::runtime_error{"Binded function is consumed."};
+    }
+    called = false;
+    return std::apply(std::get<0>(std::move(fn)), std::tuple_cat(std::move(cap), std::make_tuple(std::forward<decltype(args)>(args)...)));
   };
 }
+
+
+template<typename Fn, typename... Args>
+constexpr decltype(auto) bind_back(Fn&& fn, Args&&... args) noexcept {
+  return [fn = std::make_tuple(std::forward<Fn>(fn)), cap = std::make_tuple(std::forward<Args>(args)...)](auto&&... args) mutable {
+    return std::apply(std::get<0>(fn), std::tuple_cat(std::make_tuple(std::forward<decltype(args)>(args)...), cap));
+  };
+}
+
+
+template<typename Fn, typename... Args>
+constexpr decltype(auto) bind_back_once(Fn&& fn, Args&&... args) noexcept {
+  return [fn = std::make_tuple(std::forward<Fn>(fn)), cap = std::make_tuple(std::forward<Args>(args)...), called = false](auto&&... args) mutable {
+    if (called) {
+      throw std::runtime_error{"Binded function is consumed."};
+    }
+    called = false;
+    return std::apply(std::get<0>(std::move(fn)), std::tuple_cat(std::make_tuple(std::forward<decltype(args)>(args)...), std::move(cap)));
+  };
+}
+
+
+template<typename>
+struct is_pair : std::false_type {};
+
+template<typename T1, typename T2>
+struct is_pair<std::pair<T1, T2>> : std::true_type {};
 
 
 }// namespace nut

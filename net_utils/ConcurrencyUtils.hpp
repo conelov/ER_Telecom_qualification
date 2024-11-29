@@ -1,9 +1,15 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
+#include <stdexcept>
+#include <thread>
+#include <type_traits>
+#include <unordered_map>
 
 #include <net_utils/utils.hpp>
 
@@ -21,20 +27,86 @@
 namespace nut {
 
 
+template<bool strong, typename Atomic, typename Fn>
+typename Atomic::value_type atomic_cas(std::shared_ptr<Atomic>& atomic, Fn&& fn, std::memory_order success = std::memory_order_acq_rel, std::memory_order failure = std::memory_order_acquire) noexcept {
+  auto expected = atomic.load(std::memory_order_acquire);
+  do {
+    if constexpr (strong) {
+      if (std::atomic_compare_exchange_strong_explicit(&atomic, expected, fn(expected), success, failure)) {
+        return expected;
+      }
+    } else {
+      if (std::atomic_compare_exchange_weak_explicit(&atomic, expected, fn(expected), success, failure)) {
+        return expected;
+      }
+    }
+    thread_pause();
+  } while (true);
+}
+
+
+template<bool strong, typename Atomic, typename Fn>
+typename Atomic::value_type atomic_cas(Atomic& atomic, Fn&& fn, std::memory_order success = std::memory_order_acq_rel, std::memory_order failure = std::memory_order_acquire) noexcept {
+  auto expected = atomic.load(std::memory_order_acquire);
+  do {
+    if constexpr (strong) {
+      if (atomic.compare_exchange_strong(expected, fn(expected), success, failure)) {
+        return expected;
+      }
+    } else {
+      if (atomic.compare_exchange_weak(expected, fn(expected), success, failure)) {
+        return expected;
+      }
+    }
+    thread_pause();
+  } while (true);
+}
+
+
+template<typename Atomic, typename Fn>
+typename Atomic::value_type atomic_cas(Atomic& atomic, Fn&& fn, bool strong = false, std::memory_order success = std::memory_order_acq_rel, std::memory_order failure = std::memory_order_acquire) noexcept {
+  if (strong) {
+    return atomic_cas<true>(atomic, std::forward<Fn>(fn), success, failure);
+  } else {
+    return atomic_cas<false>(atomic, std::forward<Fn>(fn), success, failure);
+  }
+}
+
+
 class Latch final {
 public:
-  template<typename Validator>
-  void wait(Validator&& validator) {
-    {
-      std::unique_lock lk{mx_};
-      cv_.wait(lk, std::forward<Validator>(validator));
+  enum NotifyType : std::uint8_t {
+    notify_one,
+    notify_all,
+  };
+
+public:
+  void wakeup(NotifyType notify) noexcept {
+    switch (notify) {
+      case notify_one:
+        cv_.notify_one();
+        break;
+      case notify_all:
+        cv_.notify_all();
+        break;
+      default:
+        assert(false);
     }
-    wakeup();
   }
 
 
-  void wakeup() noexcept {
-    cv_.notify_one();
+  template<typename Validator>
+  void wait_unsafe(Validator&& validator) {
+    if (!validator()) {
+      wait(std::forward<Validator>(validator));
+    }
+  }
+
+
+  template<typename Validator>
+  void wait(Validator&& validator) {
+    std::unique_lock lk{mx_};
+    cv_.wait(lk, std::forward<Validator>(validator));
   }
 
 private:
@@ -43,111 +115,116 @@ private:
 };
 
 
-class ProduceConsume {
+template<typename Task_>
+class TaskPool final {
 public:
-  class InterfaceBase {
-  public:
-    InterfaceBase(InterfaceBase const&) = delete;
-    InterfaceBase(InterfaceBase&&)      = delete;
+  using Task = Task_;
+  // using Task = std::function<void()>;
 
-  protected:
-    InterfaceBase(ProduceConsume& self) noexcept
-        : self_{self} {
-    }
+private:
+  using Counter = std::uint8_t;
 
-  protected:
-    ProduceConsume& self_;
+  struct ThreadContext final {
+    Task        task;
+    std::thread thread;
   };
 
+public:
+  ~TaskPool() noexcept {
+    next(true);
+  }
 
-  class ProducerInterface final : public InterfaceBase {
-  public:
-    void run(std::size_t consumers) noexcept {
-      assert(consumers > 0);
-      wait();
-      self_.sema_consumers_.store(self_.consumers_ = consumers, std::memory_order_acq_rel);
-      self_.iteration_.fetch_add(1, std::memory_order_seq_cst);
-      self_.state_.store(State::running, std::memory_order_seq_cst);
-      self_.consumer_latch_.wakeup();
+
+  TaskPool(std::uint8_t thread_limit) noexcept
+      : thread_limit_{thread_limit} {
+  }
+
+
+  void next(bool stop = false) noexcept {
+    if (pool_.empty()) {
+      assert(stop);
+      return;
     }
 
-
-    void quit() noexcept {
-      self_.state_.store(State::quit, std::memory_order_seq_cst);
-      self_.consumer_latch_.wakeup();
-      wait();
-    }
-
-
-    [[nodiscard]] bool is_running() const noexcept {
-      return self_.sema_consumers_.load(std::memory_order_seq_cst) != 0;
-    }
-
-
-    void wait() noexcept {
-      self_.producer_latch_.wait(WRAP_IN_LAMBDA_R(!is_running(), this));
-    }
-
-  private:
-    using InterfaceBase::InterfaceBase;
-
-    friend ProduceConsume;
-  };
-
-
-  class ConsumerInterface final : public InterfaceBase {
-  public:
-    template<typename Fn>
-    void execute(Fn&& fn) noexcept {
-      do {
-        bool stopped_f = false;
-        self_.consumer_latch_.wait(WRAP_IN_LAMBDA_R(
-          self_.iteration_.load(std::memory_order_seq_cst) != 0 || (stopped_f = is_stopped()), this, &stopped_f));
-        if (stopped_f) {
-          break;
+    producer_latch_.wait_unsafe(WRAP_IN_LAMBDA_R(runner_initialized_.load(std::memory_order_seq_cst) == pool_.size(), this));
+    if (stop) {
+      iteration_.store(iteration_stop_, std::memory_order_seq_cst);
+    } else {
+      atomic_cas(iteration_, [](auto expected) {
+        if (expected + 1 == iteration_stop_) {
+          return 0;
+        } else {
+          return expected + 1;
         }
-        fn();
-      } while (true);
+      });
+    }
+    assert(runner_busy_ == 0);
+    runner_busy_.store(pool_.size(), std::memory_order_seq_cst);
+    consumer_latch_.wakeup(Latch::notify_all);
 
-      if (self_.sema_consumers_.fetch_sub(1, std::memory_order_seq_cst) - 1 == 0) {
-        self_.producer_latch_.wakeup();
+    producer_latch_.wait_unsafe(WRAP_IN_LAMBDA_R(runner_busy_.load(std::memory_order_seq_cst) == 0, this));
+    if (stop) {
+      for (auto& [k, ctx] : pool_) {
+        auto& thread = ctx.thread;
+        if (thread.joinable()) {
+          thread.join();
+        }
       }
+      pool_.clear();
     }
+  }
 
 
-  private:
-    using InterfaceBase::InterfaceBase;
+  template<typename... TaskArgs>
+  void bind(TaskArgs&&... task_args) {
+    assert(pool_.find(std::this_thread::get_id()) == pool_.end());
+    assert(pool_.size() < thread_limit_);
 
-    [[nodiscard]] bool is_stopped() const noexcept {
-      return self_.state_.load(std::memory_order_seq_cst) == State::quit;
-    }
-
-    friend ProduceConsume;
-  };
-
-public:
-  ProducerInterface producer = *this;
-  ConsumerInterface consumer = *this;
-
-public:
-  ~ProduceConsume() noexcept {
-    producer.quit();
+    std::thread thread{std::mem_fn(&TaskPool::runner), this};
+    auto const  thread_id               = thread.get_id();
+    [[maybe_unused]] auto const [it, f] = pool_.emplace(thread_id, ThreadContext{{std::forward<TaskArgs>(task_args)...}, std::move(thread)});
+    assert(f);
   }
 
 private:
-  enum class State : std::uint8_t {
-    running,
-    quit,
-  };
+  void runner() noexcept {
+    runner_initialized_.fetch_add(1, std::memory_order_seq_cst);
+    producer_latch_.wakeup(Latch::notify_one);
+    auto const init_decrement = finally(WRAP_IN_LAMBDA(runner_initialized_.fetch_sub(1, std::memory_order_seq_cst) == 1 ? producer_latch_.wakeup(Latch::notify_one) : void(0), this));
+
+    ThreadContext* ctx               = nullptr;
+    auto           current_iteration = iteration_.load(std::memory_order_seq_cst);
+    do {
+      {
+        Counter request_iteration;
+        consumer_latch_.wait_unsafe(WRAP_IN_LAMBDA_R((request_iteration = iteration_.load(std::memory_order_seq_cst)) != current_iteration, this, current_iteration, &request_iteration));
+        current_iteration = request_iteration;
+      }
+      assert(runner_busy_ > 0);
+      auto const busy_decrement = finally(WRAP_IN_LAMBDA(runner_busy_.fetch_sub(1, std::memory_order_seq_cst) == 1 ? producer_latch_.wakeup(Latch::notify_one) : void(0), this));
+
+      if (current_iteration == iteration_stop_) {
+        break;
+      }
+
+      if (!ctx) {
+        ctx = &pool_.find(std::this_thread::get_id())->second;
+      }
+      ctx->task();
+    } while (true);
+  }
 
 private:
-  Latch producer_latch_;
-  Latch consumer_latch_;
+  static auto constexpr iteration_stop_ = std::numeric_limits<Counter>::max();
 
-  std::atomic<std::uintmax_t> iteration_      = 0;
-  std::atomic<std::uint16_t>  sema_consumers_ = 0;
-  std::uint16_t               consumers_      = 0;
-  std::atomic<State>          state_          = State::running;
+private:
+  Latch                                              producer_latch_;
+  Latch                                              consumer_latch_;
+  std::unordered_map<std::thread::id, ThreadContext> pool_;
+  std::atomic<Counter>                               iteration_          = 0;
+  std::atomic<Counter>                               runner_initialized_ = 0;
+  std::atomic<Counter>                               runner_busy_        = 0;
+  std::uint8_t const                                 thread_limit_;
 };
 
 
