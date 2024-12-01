@@ -16,12 +16,12 @@ function(bench_common out_var suffix)
   collect_targets(${name} bench)
 
   target_sources(${name} PRIVATE
-    main.cpp
     common.hpp
   )
 
   target_link_libraries(${name} PRIVATE
     benchmark::benchmark
+    benchmark::benchmark_main
   )
 
   set(${out_var} ${name} PARENT_SCOPE)

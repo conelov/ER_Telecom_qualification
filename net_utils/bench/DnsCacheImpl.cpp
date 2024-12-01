@@ -46,5 +46,7 @@ void generate_dependent_args(benchmark::internal::Benchmark* b) {
 BENCH_T(DnsCacheBench, lru_std_mx, aux::DnsCacheImplTypeC<DnsCacheImplType::lru_std_mx>);
 BENCH_T(DnsCacheBench, lru_priority_mutex, aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>);
 
+// BENCH_T(DnsCacheBench, lru_lf, aux::DnsCacheImplTypeC<DnsCacheImplType::lru_priority_mutex>);
+
 BENCH_T(DnsCacheBench, rcu_std_mx, aux::DnsCacheImplTypeC<DnsCacheImplType::rcu_std_mx>);
 BENCH_T(DnsCacheBench, rcu_priority_mutex, aux::DnsCacheImplTypeC<DnsCacheImplType::rcu_priority_mutex>);

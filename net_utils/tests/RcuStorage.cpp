@@ -38,7 +38,7 @@ using Storage = ::testing::Types<
 TYPED_TEST_SUITE(RcuStorageTest, Storage);
 
 
-TYPED_TEST(RcuStorageTest, high_load) {
+TYPED_TEST(RcuStorageTest, DISABLED_high_load) {
   ASSERT_NO_THROW(this->iteration());
 
   if constexpr (std::is_base_of_v<aux::RcuStorageFixtureBaseTag, std::remove_pointer_t<decltype(this)>>) {

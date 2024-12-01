@@ -6,6 +6,7 @@ add_library(${name}
   Singleton.hpp
   ConcurrencyUtils.hpp
   LruStorage.hpp
+  LruStorageLockFree.hpp
   RcuStorage.hpp
   RcuLruStorage.hpp
   PriorityMutex.hpp

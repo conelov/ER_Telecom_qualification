@@ -67,6 +67,7 @@ private:
 
 extern template class DnsCacheImplLRU<std::mutex>;
 extern template class DnsCacheImplLRU<PriorityMutex>;
+// extern template class DnsCacheImplLRU<PriorityMutex>;
 
 
 }// namespace aux
